@@ -3,68 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paradiso Pyay Cinema - Seat Management (JSONBin)</title>
+    <title>Paradiso Pyay Cinema - Multi-Show & Movie Management</title>
     
     <style>
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
         
         .admin-controls {
-            background: #222; padding: 15px; border-radius: 8px; margin-bottom: 15px;
-            display: flex; gap: 15px; align-items: center; flex-wrap: wrap;
+            background: #222; padding: 12px 15px; border-radius: 8px; margin-bottom: 12px;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
         }
         .color-btn {
-            width: 90px; height: 38px; border: 2px solid transparent; border-radius: 6px;
-            color: #fff; font-weight: bold; cursor: pointer; text-shadow: 0 1px 2px #000;
+            width: 85px; height: 35px; border: 2px solid transparent; border-radius: 6px;
+            color: #fff; font-weight: bold; cursor: pointer; text-shadow: 0 1px 2px #000; font-size: 12px;
         }
         .color-btn.selected { border-color: #fff; outline: 3px solid #ffeb3b; }
 
         .reset-btn {
-            background: #d32f2f; color: #fff; border: none; padding: 0 16px; height: 38px;
-            border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: auto; font-size: 13px;
+            background: #d32f2f; color: #fff; border: none; padding: 0 14px; height: 35px;
+            border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: auto; font-size: 12px;
         }
         .reset-btn:hover { background: #b71c1c; }
 
-        .summary-box {
-            background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 8px;
-            margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-around;
+        /* ဆက်တင်များ ပြင်ဆင်ရန် Admin Panel (Collapsible) */
+        .settings-panel {
+            background: #1a1a1a; border: 1px solid #444; border-radius: 8px;
+            margin-bottom: 15px; overflow: hidden;
         }
-        .summary-item { text-align: center; font-size: 14px; }
-        .summary-item span { display: block; font-weight: bold; font-size: 16px; margin-top: 4px; }
+        .settings-header {
+            background: #252525; padding: 10px 15px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; font-weight: bold; font-size: 13px; color: #ffeb3b;
+            user-select: none;
+        }
+        .settings-header:hover { background: #2a2a2a; }
+        .collapse-arrow { font-size: 16px; transition: transform 0.3s; }
+        .collapse-arrow.collapsed { transform: rotate(-90deg); }
+
+        .settings-body {
+            padding: 12px 15px; display: flex; flex-direction: column; gap: 10px;
+            transition: max-height 0.3s ease;
+        }
+        .settings-body.hidden { display: none; }
+
+        .settings-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; font-size: 12px; }
+        .settings-group { display: flex; align-items: center; gap: 6px; }
+        .settings-group input {
+            background: #333; border: 1px solid #555; color: #fff; padding: 5px 8px;
+            border-radius: 4px; font-size: 12px;
+        }
+        
+        .movie-inputs-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%;
+            background: #222; padding: 8px; border-radius: 6px; border: 1px dashed #444;
+        }
+        @media (max-width: 768px) {
+            .movie-inputs-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .movie-input-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+        .movie-input-item span { min-width: 24px; font-weight: bold; color: #aaa; }
+        .movie-input-item input {
+            background: #333; border: 1px solid #555; color: #fff; padding: 4px 6px;
+            border-radius: 4px; width: 100%; font-size: 11px;
+        }
+
+        .settings-footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+        .save-settings-btn {
+            background: #2e7d32; color: #fff; border: none; padding: 6px 16px;
+            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;
+        }
+        .save-settings-btn:hover { background: #1b5e20; }
+
+        /* မျက်နှာပြင် ၁၂ ခု ရွေးရန် Tabs */
+        .screens-nav {
+            background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 12px;
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+        }
+        .screen-tab {
+            background: #333; color: #bbb; border: 1px solid #444; padding: 6px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
+            transition: all 0.2s;
+        }
+        .screen-tab:hover { background: #444; color: #fff; }
+        .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
+
+        .summary-box {
+            background: #1e1e1e; border: 1px solid #333; padding: 12px; border-radius: 8px;
+            margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: space-around;
+        }
+        .summary-item { text-align: center; font-size: 13px; }
+        .summary-item span { display: block; font-weight: bold; font-size: 15px; margin-top: 2px; }
 
         .seat-map-outer {
-            width: 100%; overflow-x: auto; background: #1e1e1e; padding: 20px 15px;
+            width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 980px; }
-        .screen-title { text-align: center; font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; letter-spacing: 1px; }
-        .screen { background: #e0e0e0; color: #000; text-align: center; padding: 8px; font-weight: bold; margin: 0 auto 25px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 980px; width: 100%; }
         
-        .seat-row { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; position: relative; }
-        .row-label { width: 35px; min-width: 35px; line-height: 32px; text-align: center; font-weight: bold; color: #fff; font-size: 14px; margin-left: 10px; }
+        .movie-display-header {
+            text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
+            border-radius: 6px; margin-bottom: 12px;
+        }
+        .movie-title-text { font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 2px; }
+        .movie-info-sub { font-size: 12px; color: #aaa; }
+
+        .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
-        /* ဈေးနှုန်းအုပ်စုလိုက် ဘေးမှာပြမည့် Box ပုံစံ */
+        .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; }
+        .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
+        
         .tier-summary-badge {
-            margin-left: 15px;
-            font-size: 12px;
-            color: #ffeb3b;
-            font-weight: bold;
-            background: #2a2a2a;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid #444;
-            min-width: 140px;
-            display: inline-block;
-            text-align: center;
+            margin-left: 12px; font-size: 11px; color: #ffeb3b; font-weight: bold;
+            background: #2a2a2a; padding: 4px 10px; border-radius: 4px; border: 1px solid #444;
+            min-width: 130px; display: inline-block; text-align: center;
         }
 
         .seat {
-            width: 26px; height: 32px; min-width: 26px; border-radius: 3px; font-size: 11px;
+            width: 25px; height: 30px; min-width: 25px; border-radius: 3px; font-size: 11px;
             display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
             user-select: none; color: #000; font-weight: bold; transition: transform 0.1s;
         }
         .seat:hover { transform: scale(1.15); z-index: 10; }
-        .empty { width: 26px; min-width: 26px; height: 32px; }
+        .empty { width: 25px; min-width: 25px; height: 30px; }
         
         .price-4000 { background-color: #777670; color: #fff; }
         .price-5000 { background-color: #9BBB59; }
@@ -77,32 +136,102 @@
         .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
         .admin-purple { background-color: #9933ee !important; color: white !important; }
 
-        .legend { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; font-size: 12px; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-box { width: 16px; height: 16px; border-radius: 3px; }
+        /* ပုံထဲက ပြထားတဲ့ အလွတ်နေရာအတွက် Refresh ခလုတ်စတိုင် */
+        .refresh-spot-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+        .refresh-custom-btn {
+            background: #252525;
+            color: #ffeb3b;
+            border: 1px solid #555;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .refresh-custom-btn:hover {
+            background: #333;
+            border-color: #ffeb3b;
+            transform: scale(1.05);
+        }
+
+        .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
     </style>
 </head>
 <body>
 
+    <!-- Admin အရောင်ရွေးချယ်မှု -->
     <div class="admin-controls">
-        <span><b>Admin အရောင်ရွေးပါ:</b></span>
-        <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ - ရောင်းပြီး</button>
+        <span><b>အရောင်:</b></span>
+        <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ (ရောင်းပြီး)</button>
         <button class="color-btn" style="background:#ffcc00; color:#000;" onclick="selectColor('yellow', this)">အဝါ</button>
         <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
         
-        <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset All (3 Clicks Left)</button>
+        <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Screen (3 Clicks)</button>
     </div>
+
+    <!-- ဇက်စွဲ၊ ပွဲချိန်နှင့် ဇာတ်ကားနာမည်များ -->
+    <div class="settings-panel">
+        <div class="settings-header" onclick="toggleSettingsPanel()">
+            <span>⚙️ ရက်စွဲ၊ ပွဲချိန် နှင့် ဇာတ်ကားနာမည်များ သတ်မှတ်ရန် (ဆက်တင်များ)</span>
+            <span class="collapse-arrow" id="collapseArrow">▼</span>
+        </div>
+        <div class="settings-body" id="settingsBody">
+            <div class="settings-row">
+                <div class="settings-group">
+                    <label><b>ရက်စွဲ (၃ ရက်စာ):</b></label>
+                    <input type="date" id="date1">
+                    <input type="date" id="date2">
+                    <input type="date" id="date3">
+                </div>
+                <div class="settings-group">
+                    <label><b>ပွဲချိန် (၄ ချိန်):</b></label>
+                    <input type="text" id="time1" placeholder="ပွဲ ၁" style="width:85px;">
+                    <input type="text" id="time2" placeholder="ပွဲ ၂" style="width:85px;">
+                    <input type="text" id="time3" placeholder="ပွဲ ၃" style="width:85px;">
+                    <input type="text" id="time4" placeholder="ပွဲ ၄" style="width:85px;">
+                </div>
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #ffeb3b; font-weight: bold; display: block; margin-bottom: 4px;">Screen ၁၂ ခုအတွက် ဇာတ်ကားနာမည်များ:</label>
+                <div class="movie-inputs-grid" id="movieInputsContainer"></div>
+            </div>
+            <div class="settings-footer-row">
+                <span style="font-size: 11px; color: #888;">ပြင်ဆင်ပြီးပါက သိမ်းရန် နှိပ်ပါ</span>
+                <button class="save-settings-btn" onclick="saveSettings()">💾 ပြောင်းလဲမှုများ သိမ်းမည်</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- မျက်နှာပြင် ၁၂ ခု ရွေးရန် ခလုတ်များ -->
+    <div class="screens-nav" id="screensNav"></div>
 
     <div class="summary-box">
         <div class="summary-item" style="color: #ff3333;">အနီ (ရောင်းပြီး): <span id="count-red">0 ခုံ</span> (<span id="price-red">0</span> Ks)</div>
         <div class="summary-item" style="color: #ffcc00;">အဝါ: <span id="count-yellow">0 ခုံ</span> (<span id="price-yellow">0</span> Ks)</div>
         <div class="summary-item" style="color: #9933ee;">ခရမ်း: <span id="count-purple">0 ခုံ</span> (<span id="price-purple">0</span> Ks)</div>
-        <div class="summary-item" style="color: #ffeb3b; border-left: 1px solid #444; padding-left: 20px;">စုစုပေါင်းဝင်ငွေ: <span id="total-price">0</span> Ks</div>
+        <div class="summary-item" style="color: #ffeb3b; border-left: 1px solid #444; padding-left: 15px;">စုစုပေါင်းဝင်ငွေ: <span id="total-price">0</span> Ks</div>
     </div>
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
-            <div class="screen-title">Paradiso Cinema Pyay - Seat Plan</div>
+            <div class="movie-display-header">
+                <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
+                <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+            </div>
+
             <div class="screen">SCREEN</div>
             <div id="seatContainer"></div>
         </div>
@@ -110,12 +239,12 @@
 
     <div class="legend">
         <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> အနီ - ရောင်းပြီး</div>
-        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 Ks (A)</div>
-        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 Ks (B-D)</div>
-        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 Ks (E-F)</div>
-        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 Ks (G-H)</div>
-        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 Ks (I-Q)</div>
-        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 Ks (R-S)</div>
+        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
+        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
+        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
+        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
+        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
+        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
     </div>
 
     <script>
@@ -137,7 +266,7 @@
             { label: 'J', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'K', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'L', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 'refresh_btn_slot', 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'N', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'O', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'P', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
@@ -147,18 +276,18 @@
             { label: 'S', price: 20000, tier: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
         ];
 
-        // ဈေးနှုန်းအုပ်စုတစ်ခုချင်းစီရဲ့ အလယ်တန်း (သို့မဟုတ် သင့်တော်မည့်တန်း) ကို သတ်မှတ်ပေးခြင်း
-        const tierMiddleRows = {
-            4000: 'A',
-            5000: 'C', // B, C, D ရဲ့ အလယ် C တန်းဘေးမှာပြမည်
-            6000: 'F', // E, F ရဲ့အလယ်
-            7000: 'H', // G, H ရဲ့အလယ်
-            8000: 'M', // I to Q ရဲ့ အလယ် M တန်းဘေးမှာပြမည်
-            20000: 'S' // R, S ရဲ့အောက်ဆုံး
-        };
+        const tierMiddleRows = { 4000: 'A', 5000: 'C', 6000: 'F', 7000: 'H', 8000: 'M', 20000: 'S' };
 
         let selectedAdminColor = null;
-        let seatData = {};
+        let globalData = {
+            settings: {
+                dates: ["2026-06-01", "2026-06-02", "2026-06-03"],
+                times: ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"],
+                movies: {}
+            },
+            screens: {}
+        };
+        let currentScreenId = 'screen_1';
 
         function selectColor(color, el) {
             selectedAdminColor = color;
@@ -166,25 +295,34 @@
             el.classList.add('selected');
         }
 
-        async function fetchSeats() {
+        function toggleSettingsPanel() {
+            const body = document.getElementById('settingsBody');
+            const arrow = document.getElementById('collapseArrow');
+            body.classList.toggle('hidden');
+            arrow.classList.toggle('collapsed');
+        }
+
+        async function fetchBinData() {
             try {
                 const response = await fetch(API_URL + '/latest', {
                     headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 const result = await response.json();
-                seatData = result.record || {};
-                
-                if (seatData._reset) {
-                    seatData = {};
+                if (result.record && Object.keys(result.record).length > 0) {
+                    globalData = result.record;
                 }
-                
+                initSettingsUI();
+                buildScreensNav();
                 updateUI();
             } catch (err) {
                 console.error("Error fetching data", err);
+                initSettingsUI();
+                buildScreensNav();
+                updateUI();
             }
         }
 
-        async function saveSeats(dataToSave) {
+        async function saveBinData() {
             try {
                 await fetch(API_URL, {
                     method: 'PUT',
@@ -192,44 +330,150 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': MASTER_KEY
                     },
-                    body: JSON.stringify(dataToSave)
+                    body: JSON.stringify(globalData)
                 });
             } catch (err) {
                 console.error("Error saving data", err);
             }
         }
 
+        // ညွှန်ပြထားတဲ့ နေရာမှာ ထည့်ထားတဲ့ Refresh လုပ်ဆောင်ချက်
+        async function refreshData() {
+            const btn = document.getElementById('refreshCustomBtn');
+            if(btn) btn.innerText = "⏳ ဆွဲနေသည်...";
+            await fetchBinData();
+            if(btn) btn.innerText = "🔄 ဒေတာအသစ်ရယူရန်";
+            alert('ဒေတာအသစ်များကို အောင်မြင်စွာ ဆွဲယူပြီးပါပြီ!');
+        }
+
+        function initSettingsUI() {
+            if (!globalData.settings) {
+                globalData.settings = {
+                    dates: ["2026-06-01", "2026-06-02", "2026-06-03"],
+                    times: ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"],
+                    movies: {}
+                };
+            }
+            document.getElementById('date1').value = globalData.settings.dates[0] || '';
+            document.getElementById('date2').value = globalData.settings.dates[1] || '';
+            document.getElementById('date3').value = globalData.settings.dates[2] || '';
+
+            document.getElementById('time1').value = globalData.settings.times[0] || '';
+            document.getElementById('time2').value = globalData.settings.times[1] || '';
+            document.getElementById('time3').value = globalData.settings.times[2] || '';
+            document.getElementById('time4').value = globalData.settings.times[3] || '';
+
+            const movieContainer = document.getElementById('movieInputsContainer');
+            movieContainer.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                let sKey = `screen_${i}`;
+                let mName = (globalData.settings.movies && globalData.settings.movies[sKey]) ? globalData.settings.movies[sKey] : '';
+                
+                let div = document.createElement('div');
+                div.className = 'movie-input-item';
+                div.innerHTML = `<span>S${i}</span><input type="text" id="m_input_${i}" value="${mName}" placeholder="ဇာတ်ကားနာမည်">`;
+                movieContainer.appendChild(div);
+            }
+        }
+
+        async function saveSettings() {
+            globalData.settings.dates = [
+                document.getElementById('date1').value,
+                document.getElementById('date2').value,
+                document.getElementById('date3').value
+            ];
+            globalData.settings.times = [
+                document.getElementById('time1').value,
+                document.getElementById('time2').value,
+                document.getElementById('time3').value,
+                document.getElementById('time4').value
+            ];
+
+            if (!globalData.settings.movies) globalData.settings.movies = {};
+            for (let i = 1; i <= 12; i++) {
+                let val = document.getElementById(`m_input_${i}`).value;
+                globalData.settings.movies[`screen_${i}`] = val;
+            }
+
+            buildScreensNav();
+            updateUI();
+            await saveBinData();
+            alert('ဆက်တင်များနှင့် ဇာတ်ကားနာမည်များကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
+        }
+
+        function buildScreensNav() {
+            const nav = document.getElementById('screensNav');
+            nav.innerHTML = '';
+            
+            const dates = globalData.settings.dates;
+            const times = globalData.settings.times;
+            const movies = globalData.settings.movies || {};
+
+            let count = 1;
+            for (let d = 0; d < 3; d++) {
+                let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                for (let t = 0; t < 4; t++) {
+                    let timeStr = times[t] ? times[t] : `Show ${t+1}`;
+                    let sId = `screen_${count}`;
+                    let movieShort = movies[sId] ? ` - ${movies[sId]}` : '';
+                    
+                    const btn = document.createElement('button');
+                    btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
+                    btn.innerText = `[S${count}] ${dateStr} (${timeStr})${movieShort}`;
+                    btn.onclick = () => {
+                        currentScreenId = sId;
+                        buildScreensNav();
+                        updateUI();
+                    };
+                    nav.appendChild(btn);
+                    count++;
+                }
+            }
+        }
+
+        function getActiveScreenSeats() {
+            if (!globalData.screens) globalData.screens = {};
+            if (!globalData.screens[currentScreenId]) globalData.screens[currentScreenId] = {};
+            return globalData.screens[currentScreenId];
+        }
+
         function updateUI() {
+            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
+            let dIndex = Math.floor(screenIndex / 4);
+            let tIndex = screenIndex % 4;
+            
+            let dateText = (globalData.settings.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
+
+            document.getElementById('displayMovieTitle').innerText = movieName;
+            document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
+
+            let screenSeats = getActiveScreenSeats();
+
             document.querySelectorAll('.seat').forEach(seat => {
                 seat.classList.remove('admin-red', 'admin-yellow', 'admin-purple');
                 const seatId = seat.id;
-                if (seatData[seatId]) {
-                    seat.classList.add('admin-' + seatData[seatId]);
+                if (screenSeats[seatId]) {
+                    seat.classList.add('admin-' + screenSeats[seatId]);
                 }
             });
             calculateSummary();
         }
 
         function calculateSummary() {
+            let screenSeats = getActiveScreenSeats();
             let counts = { red: 0, yellow: 0, purple: 0 };
             let prices = { red: 0, yellow: 0, purple: 0 };
 
-            // ဈေးနှုန်းအုပ်စုအလိုက် စုစုပေါင်း တွက်ချက်ရန်
-            let tierStats = {
-                4000: { count: 0, total: 0 },
-                5000: { count: 0, total: 0 },
-                6000: { count: 0, total: 0 },
-                7000: { count: 0, total: 0 },
-                8000: { count: 0, total: 0 },
-                20000: { count: 0, total: 0 }
-            };
+            let tierStats = { 4000: { count: 0, total: 0 }, 5000: { count: 0, total: 0 }, 6000: { count: 0, total: 0 }, 7000: { count: 0, total: 0 }, 8000: { count: 0, total: 0 }, 20000: { count: 0, total: 0 } };
 
             seatStructure.forEach(row => {
                 if (row.type !== 'gap') {
                     row.seats.forEach(num => {
-                        if (num !== 0) {
+                        if (num !== 0 && num !== 'refresh_btn_slot') {
                             let seatId = 'seat-' + row.label + '-' + num;
-                            if (seatData[seatId]) { // အရောင်ခြယ်ထားလျှင်
+                            if (screenSeats[seatId]) {
                                 tierStats[row.tier].count++;
                                 tierStats[row.tier].total += row.price;
                             }
@@ -238,9 +482,7 @@
                 }
             });
 
-            // အုပ်စုတစ်ခုချင်းစီအတွက် သတ်မှတ်ထားသော တန်းဘေးမှာ Badge ထည့်/အသစ်ပြရန်
             for (let tier in tierMiddleRows) {
-                let targetRowLabel = tierMiddleRows[tier];
                 let badgeEl = document.getElementById('tier-badge-' + tier);
                 if (badgeEl) {
                     let stat = tierStats[tier];
@@ -254,9 +496,8 @@
                 }
             }
 
-            // အပေါ်ဆုံး စုစုပေါင်း summary အတွက်
-            for (let seatId in seatData) {
-                let color = seatData[seatId];
+            for (let seatId in screenSeats) {
+                let color = screenSeats[seatId];
                 if (counts[color] !== undefined) {
                     counts[color]++;
                     let parts = seatId.split('-');
@@ -270,10 +511,8 @@
 
             document.getElementById('count-red').innerText = counts.red + ' ခုံ';
             document.getElementById('price-red').innerText = prices.red.toLocaleString();
-
             document.getElementById('count-yellow').innerText = counts.yellow + ' ခုံ';
             document.getElementById('price-yellow').innerText = prices.yellow.toLocaleString();
-
             document.getElementById('count-purple').innerText = counts.purple + ' ခုံ';
             document.getElementById('price-purple').innerText = prices.purple.toLocaleString();
 
@@ -282,11 +521,12 @@
         }
 
         const container = document.getElementById('seatContainer');
+        container.innerHTML = '';
 
         seatStructure.forEach(row => {
             if (row.type === 'gap') {
                 const gapDiv = document.createElement('div');
-                gapDiv.style.height = '16px';
+                gapDiv.style.height = '14px';
                 container.appendChild(gapDiv);
                 return;
             }
@@ -294,32 +534,40 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
-            row.seats.forEach(num => {
-                if (num === 0) {
+            row.seats.forEach(item => {
+                if (item === 0) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'empty';
                     rowDiv.appendChild(emptyDiv);
+                } else if (item === 'refresh_btn_slot') {
+                    // ညွှန်ပြထားတဲ့ နေရာမှာ Refresh ခလုတ်ထည့်ရန်
+                    const spotDiv = document.createElement('div');
+                    spotDiv.className = 'refresh-spot-container';
+                    spotDiv.innerHTML = `<button id="refreshCustomBtn" class="refresh-custom-btn" onclick="refreshData()">🔄 Refresh</button>`;
+                    rowDiv.appendChild(spotDiv);
                 } else {
                     const seatBtn = document.createElement('div');
-                    const seatId = 'seat-' + row.label + '-' + num;
+                    const seatId = 'seat-' + row.label + '-' + item;
                     seatBtn.id = seatId;
                     seatBtn.className = `seat ${row.class}`;
-                    seatBtn.innerText = num;
+                    seatBtn.innerText = item;
                     
                     seatBtn.onclick = async () => {
                         if (!selectedAdminColor) {
                             alert('ကျေးဇူးပြု၍ အပေါ်ဘက်မှ အနီ/အဝါ/ခရမ်း ရောင်တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
                             return;
                         }
-                        seatData[seatId] = selectedAdminColor;
+                        let screenSeats = getActiveScreenSeats();
+                        screenSeats[seatId] = selectedAdminColor;
                         updateUI();
-                        await saveSeats(seatData);
+                        await saveBinData();
                     };
 
                     seatBtn.ondblclick = async () => {
-                        delete seatData[seatId];
+                        let screenSeats = getActiveScreenSeats();
+                        delete screenSeats[seatId];
                         updateUI();
-                        await saveSeats(seatData);
+                        await saveBinData();
                     };
 
                     rowDiv.appendChild(seatBtn);
@@ -331,7 +579,6 @@
             labelDiv.innerText = row.label;
             rowDiv.appendChild(labelDiv);
 
-            // အကယ်၍ ဤတန်းသည် သတ်မှတ်ထားသော ဈေးနှုန်းအုပ်စု၏ အလယ်တန်းဖြစ်နေလျှင် စုစုပေါင်းပြမည့် Badge ထည့်ပေးမည်
             for (let tier in tierMiddleRows) {
                 if (tierMiddleRows[tier] === row.label) {
                     const badgeDiv = document.createElement('div');
@@ -354,30 +601,27 @@
             const remaining = 3 - resetClickCount;
 
             if (resetClickCount < 3) {
-                resetBtn.innerText = `Click ${remaining} More Time${remaining > 1 ? 's' : ''}`;
+                resetBtn.innerText = `Click ${remaining} More Times`;
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => {
                     resetClickCount = 0;
-                    resetBtn.innerText = 'Reset All (3 Clicks Left)';
+                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
                 }, 2000);
             } else {
                 clearTimeout(resetTimer);
-                
-                seatData = {};
+                globalData.screens[currentScreenId] = {};
                 updateUI();
-                
-                await saveSeats({ _reset: true });
+                await saveBinData();
 
                 resetClickCount = 0;
                 resetBtn.innerText = 'Cleared!';
                 setTimeout(() => {
-                    resetBtn.innerText = 'Reset All (3 Clicks Left)';
+                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
                 }, 1500);
             }
         }
 
-        fetchSeats();
-        setInterval(fetchSeats, 3000);
+        fetchBinData();
     </script>
 </body>
 </html>
