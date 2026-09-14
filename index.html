@@ -99,12 +99,37 @@
         }
         .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 980px; width: 100%; }
         
+        /* ဇာတ်ကားခေါင်းစဉ်ပြသသည့် အကွက်ကို ဘယ်ညာခွဲကာ ညာဘက်တွင် Refresh ခလုတ်ထည့်ရန် */
         .movie-display-header {
-            text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
+            background: #252525; border: 1px solid #444; padding: 12px 15px;
             border-radius: 6px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .movie-title-area { text-align: left; }
         .movie-title-text { font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 2px; }
         .movie-info-sub { font-size: 12px; color: #aaa; }
+
+        /* ပုံထဲက ဝိုင်းပြထားသော နေရာအတွက် Refresh ခလုတ်စတိုင် */
+        .refresh-custom-btn {
+            background: #333;
+            color: #ffeb3b;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .refresh-custom-btn:hover {
+            background: #444;
+            border-color: #ffeb3b;
+            transform: scale(1.03);
+        }
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
@@ -135,35 +160,6 @@
         .admin-red { background-color: #ff3333 !important; color: white !important; }
         .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
         .admin-purple { background-color: #9933ee !important; color: white !important; }
-
-        /* ပုံထဲက ပြထားတဲ့ အလွတ်နေရာအတွက် Refresh ခလုတ်စတိုင် */
-        .refresh-spot-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            vertical-align: middle;
-            margin: 0 10px;
-        }
-        .refresh-custom-btn {
-            background: #252525;
-            color: #ffeb3b;
-            border: 1px solid #555;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        .refresh-custom-btn:hover {
-            background: #333;
-            border-color: #ffeb3b;
-            transform: scale(1.05);
-        }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
@@ -227,9 +223,15 @@
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
+            <!-- တောင်းဆိုထားသော ပုံပါ အလွတ်နေရာ (ခေါင်းစဉ်အကွက်၏ ညာဘက်ခြမ်း) တွင် Refresh ခလုတ်ထည့်သွင်းခြင်း -->
             <div class="movie-display-header">
-                <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
-                <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+                <div class="movie-title-area">
+                    <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
+                    <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+                </div>
+                <div>
+                    <button id="refreshCustomBtn" class="refresh-custom-btn" onclick="refreshData()">🔄 Refresh</button>
+                </div>
             </div>
 
             <div class="screen">SCREEN</div>
@@ -266,7 +268,7 @@
             { label: 'J', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'K', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'L', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 'refresh_btn_slot', 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'N', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'O', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'P', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
@@ -337,12 +339,11 @@
             }
         }
 
-        // ညွှန်ပြထားတဲ့ နေရာမှာ ထည့်ထားတဲ့ Refresh လုပ်ဆောင်ချက်
         async function refreshData() {
             const btn = document.getElementById('refreshCustomBtn');
             if(btn) btn.innerText = "⏳ ဆွဲနေသည်...";
             await fetchBinData();
-            if(btn) btn.innerText = "🔄 ဒေတာအသစ်ရယူရန်";
+            if(btn) btn.innerText = "🔄 Refresh";
             alert('ဒေတာအသစ်များကို အောင်မြင်စွာ ဆွဲယူပြီးပါပြီ!');
         }
 
@@ -367,261 +368,4 @@
             movieContainer.innerHTML = '';
             for (let i = 1; i <= 12; i++) {
                 let sKey = `screen_${i}`;
-                let mName = (globalData.settings.movies && globalData.settings.movies[sKey]) ? globalData.settings.movies[sKey] : '';
-                
-                let div = document.createElement('div');
-                div.className = 'movie-input-item';
-                div.innerHTML = `<span>S${i}</span><input type="text" id="m_input_${i}" value="${mName}" placeholder="ဇာတ်ကားနာမည်">`;
-                movieContainer.appendChild(div);
-            }
-        }
-
-        async function saveSettings() {
-            globalData.settings.dates = [
-                document.getElementById('date1').value,
-                document.getElementById('date2').value,
-                document.getElementById('date3').value
-            ];
-            globalData.settings.times = [
-                document.getElementById('time1').value,
-                document.getElementById('time2').value,
-                document.getElementById('time3').value,
-                document.getElementById('time4').value
-            ];
-
-            if (!globalData.settings.movies) globalData.settings.movies = {};
-            for (let i = 1; i <= 12; i++) {
-                let val = document.getElementById(`m_input_${i}`).value;
-                globalData.settings.movies[`screen_${i}`] = val;
-            }
-
-            buildScreensNav();
-            updateUI();
-            await saveBinData();
-            alert('ဆက်တင်များနှင့် ဇာတ်ကားနာမည်များကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
-        }
-
-        function buildScreensNav() {
-            const nav = document.getElementById('screensNav');
-            nav.innerHTML = '';
-            
-            const dates = globalData.settings.dates;
-            const times = globalData.settings.times;
-            const movies = globalData.settings.movies || {};
-
-            let count = 1;
-            for (let d = 0; d < 3; d++) {
-                let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
-                for (let t = 0; t < 4; t++) {
-                    let timeStr = times[t] ? times[t] : `Show ${t+1}`;
-                    let sId = `screen_${count}`;
-                    let movieShort = movies[sId] ? ` - ${movies[sId]}` : '';
-                    
-                    const btn = document.createElement('button');
-                    btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerText = `[S${count}] ${dateStr} (${timeStr})${movieShort}`;
-                    btn.onclick = () => {
-                        currentScreenId = sId;
-                        buildScreensNav();
-                        updateUI();
-                    };
-                    nav.appendChild(btn);
-                    count++;
-                }
-            }
-        }
-
-        function getActiveScreenSeats() {
-            if (!globalData.screens) globalData.screens = {};
-            if (!globalData.screens[currentScreenId]) globalData.screens[currentScreenId] = {};
-            return globalData.screens[currentScreenId];
-        }
-
-        function updateUI() {
-            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
-            let dIndex = Math.floor(screenIndex / 4);
-            let tIndex = screenIndex % 4;
-            
-            let dateText = (globalData.settings.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
-            let timeText = (globalData.settings.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
-            let movieName = (globalData.settings.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
-
-            document.getElementById('displayMovieTitle').innerText = movieName;
-            document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
-
-            let screenSeats = getActiveScreenSeats();
-
-            document.querySelectorAll('.seat').forEach(seat => {
-                seat.classList.remove('admin-red', 'admin-yellow', 'admin-purple');
-                const seatId = seat.id;
-                if (screenSeats[seatId]) {
-                    seat.classList.add('admin-' + screenSeats[seatId]);
-                }
-            });
-            calculateSummary();
-        }
-
-        function calculateSummary() {
-            let screenSeats = getActiveScreenSeats();
-            let counts = { red: 0, yellow: 0, purple: 0 };
-            let prices = { red: 0, yellow: 0, purple: 0 };
-
-            let tierStats = { 4000: { count: 0, total: 0 }, 5000: { count: 0, total: 0 }, 6000: { count: 0, total: 0 }, 7000: { count: 0, total: 0 }, 8000: { count: 0, total: 0 }, 20000: { count: 0, total: 0 } };
-
-            seatStructure.forEach(row => {
-                if (row.type !== 'gap') {
-                    row.seats.forEach(num => {
-                        if (num !== 0 && num !== 'refresh_btn_slot') {
-                            let seatId = 'seat-' + row.label + '-' + num;
-                            if (screenSeats[seatId]) {
-                                tierStats[row.tier].count++;
-                                tierStats[row.tier].total += row.price;
-                            }
-                        }
-                    });
-                }
-            });
-
-            for (let tier in tierMiddleRows) {
-                let badgeEl = document.getElementById('tier-badge-' + tier);
-                if (badgeEl) {
-                    let stat = tierStats[tier];
-                    if (stat.count > 0) {
-                        badgeEl.innerText = `${stat.count}ခုံ / ${stat.total.toLocaleString()} Ks`;
-                        badgeEl.style.display = 'inline-block';
-                    } else {
-                        badgeEl.innerText = '';
-                        badgeEl.style.display = 'none';
-                    }
-                }
-            }
-
-            for (let seatId in screenSeats) {
-                let color = screenSeats[seatId];
-                if (counts[color] !== undefined) {
-                    counts[color]++;
-                    let parts = seatId.split('-');
-                    let rowLabel = parts[1];
-                    let rowObj = seatStructure.find(r => r.label === rowLabel);
-                    if (rowObj) {
-                        prices[color] += rowObj.price;
-                    }
-                }
-            }
-
-            document.getElementById('count-red').innerText = counts.red + ' ခုံ';
-            document.getElementById('price-red').innerText = prices.red.toLocaleString();
-            document.getElementById('count-yellow').innerText = counts.yellow + ' ခုံ';
-            document.getElementById('price-yellow').innerText = prices.yellow.toLocaleString();
-            document.getElementById('count-purple').innerText = counts.purple + ' ခုံ';
-            document.getElementById('price-purple').innerText = prices.purple.toLocaleString();
-
-            let grandTotal = prices.red + prices.yellow + prices.purple;
-            document.getElementById('total-price').innerText = grandTotal.toLocaleString();
-        }
-
-        const container = document.getElementById('seatContainer');
-        container.innerHTML = '';
-
-        seatStructure.forEach(row => {
-            if (row.type === 'gap') {
-                const gapDiv = document.createElement('div');
-                gapDiv.style.height = '14px';
-                container.appendChild(gapDiv);
-                return;
-            }
-
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'seat-row';
-
-            row.seats.forEach(item => {
-                if (item === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'empty';
-                    rowDiv.appendChild(emptyDiv);
-                } else if (item === 'refresh_btn_slot') {
-                    // ညွှန်ပြထားတဲ့ နေရာမှာ Refresh ခလုတ်ထည့်ရန်
-                    const spotDiv = document.createElement('div');
-                    spotDiv.className = 'refresh-spot-container';
-                    spotDiv.innerHTML = `<button id="refreshCustomBtn" class="refresh-custom-btn" onclick="refreshData()">🔄 Refresh</button>`;
-                    rowDiv.appendChild(spotDiv);
-                } else {
-                    const seatBtn = document.createElement('div');
-                    const seatId = 'seat-' + row.label + '-' + item;
-                    seatBtn.id = seatId;
-                    seatBtn.className = `seat ${row.class}`;
-                    seatBtn.innerText = item;
-                    
-                    seatBtn.onclick = async () => {
-                        if (!selectedAdminColor) {
-                            alert('ကျေးဇူးပြု၍ အပေါ်ဘက်မှ အနီ/အဝါ/ခရမ်း ရောင်တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
-                            return;
-                        }
-                        let screenSeats = getActiveScreenSeats();
-                        screenSeats[seatId] = selectedAdminColor;
-                        updateUI();
-                        await saveBinData();
-                    };
-
-                    seatBtn.ondblclick = async () => {
-                        let screenSeats = getActiveScreenSeats();
-                        delete screenSeats[seatId];
-                        updateUI();
-                        await saveBinData();
-                    };
-
-                    rowDiv.appendChild(seatBtn);
-                }
-            });
-
-            const labelDiv = document.createElement('div');
-            labelDiv.className = 'row-label';
-            labelDiv.innerText = row.label;
-            rowDiv.appendChild(labelDiv);
-
-            for (let tier in tierMiddleRows) {
-                if (tierMiddleRows[tier] === row.label) {
-                    const badgeDiv = document.createElement('div');
-                    badgeDiv.className = 'tier-summary-badge';
-                    badgeDiv.id = 'tier-badge-' + tier;
-                    badgeDiv.style.display = 'none';
-                    rowDiv.appendChild(badgeDiv);
-                }
-            }
-
-            container.appendChild(rowDiv);
-        });
-
-        let resetClickCount = 0;
-        let resetTimer = null;
-
-        async function handleResetClick() {
-            resetClickCount++;
-            const resetBtn = document.getElementById('resetBtn');
-            const remaining = 3 - resetClickCount;
-
-            if (resetClickCount < 3) {
-                resetBtn.innerText = `Click ${remaining} More Times`;
-                clearTimeout(resetTimer);
-                resetTimer = setTimeout(() => {
-                    resetClickCount = 0;
-                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
-                }, 2000);
-            } else {
-                clearTimeout(resetTimer);
-                globalData.screens[currentScreenId] = {};
-                updateUI();
-                await saveBinData();
-
-                resetClickCount = 0;
-                resetBtn.innerText = 'Cleared!';
-                setTimeout(() => {
-                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
-                }, 1500);
-            }
-        }
-
-        fetchBinData();
-    </script>
-</body>
-</html>
+                let mName = (globalData.settings.movies && globalData.settings.movies[sKey]) ? globalData.settings.movies[sKe
