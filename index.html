@@ -40,22 +40,22 @@
         .screen-title { text-align: center; font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; letter-spacing: 1px; }
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 8px; font-weight: bold; margin: 0 auto 25px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; }
         
-        .seat-row { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; }
+        .seat-row { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; position: relative; }
         .row-label { width: 35px; min-width: 35px; line-height: 32px; text-align: center; font-weight: bold; color: #fff; font-size: 14px; margin-left: 10px; }
         
-        /* တန်းတစ်ခုချင်းစီရဲ့ဘေးက စာသားပြမည့်နေရာ */
-        .row-subtotal {
+        /* ဈေးနှုန်းအုပ်စုလိုက် ဘေးမှာပြမည့် Box ပုံစံ */
+        .tier-summary-badge {
             margin-left: 15px;
             font-size: 12px;
             color: #ffeb3b;
             font-weight: bold;
             background: #2a2a2a;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             border: 1px solid #444;
-            min-width: 110px;
+            min-width: 140px;
             display: inline-block;
-            text-align: right;
+            text-align: center;
         }
 
         .seat {
@@ -124,28 +124,38 @@
         const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
         const seatStructure = [
-            { label: 'A', price: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'B', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'C', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'D', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'E', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'F', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'A', price: 4000, tier: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'B', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'C', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'D', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'E', price: 6000, tier: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'F', price: 6000, tier: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'G', price: 7000, tier: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'H', price: 7000, tier: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { type: 'gap' },
-            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'I', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'J', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'K', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'N', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'O', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'P', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'Q', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { type: 'gap' },
-            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
-            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+            { label: 'R', price: 20000, tier: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, tier: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
         ];
+
+        // ဈေးနှုန်းအုပ်စုတစ်ခုချင်းစီရဲ့ အလယ်တန်း (သို့မဟုတ် သင့်တော်မည့်တန်း) ကို သတ်မှတ်ပေးခြင်း
+        const tierMiddleRows = {
+            4000: 'A',
+            5000: 'C', // B, C, D ရဲ့ အလယ် C တန်းဘေးမှာပြမည်
+            6000: 'F', // E, F ရဲ့အလယ်
+            7000: 'H', // G, H ရဲ့အလယ်
+            8000: 'M', // I to Q ရဲ့ အလယ် M တန်းဘေးမှာပြမည်
+            20000: 'S' // R, S ရဲ့အောက်ဆုံး
+        };
 
         let selectedAdminColor = null;
         let seatData = {};
@@ -204,33 +214,45 @@
             let counts = { red: 0, yellow: 0, purple: 0 };
             let prices = { red: 0, yellow: 0, purple: 0 };
 
-            // တန်းတစ်ခုချင်းစီအတွက် တွက်ချက်ရန်
+            // ဈေးနှုန်းအုပ်စုအလိုက် စုစုပေါင်း တွက်ချက်ရန်
+            let tierStats = {
+                4000: { count: 0, total: 0 },
+                5000: { count: 0, total: 0 },
+                6000: { count: 0, total: 0 },
+                7000: { count: 0, total: 0 },
+                8000: { count: 0, total: 0 },
+                20000: { count: 0, total: 0 }
+            };
+
             seatStructure.forEach(row => {
                 if (row.type !== 'gap') {
-                    let rowCount = 0;
-                    let rowTotalPrice = 0;
-
                     row.seats.forEach(num => {
                         if (num !== 0) {
                             let seatId = 'seat-' + row.label + '-' + num;
-                            if (seatData[seatId]) { // မည်သည့်အရောင်မဆို ရွေးထားလျှင် (အနီ၊ အဝါ၊ ခရမ်း)
-                                rowCount++;
-                                rowTotalPrice += row.price;
+                            if (seatData[seatId]) { // အရောင်ခြယ်ထားလျှင်
+                                tierStats[row.tier].count++;
+                                tierStats[row.tier].total += row.price;
                             }
                         }
                     });
-
-                    // စာသားပြမည့် element ကို အပ်ဒိတ်လုပ်မည်
-                    const subtotalEl = document.getElementById('subtotal-' + row.label);
-                    if (subtotalEl) {
-                        if (rowCount > 0) {
-                            subtotalEl.innerText = `${rowCount}ခုံ / ${rowTotalPrice.toLocaleString()} Ks`;
-                        } else {
-                            subtotalEl.innerText = '';
-                        }
-                    }
                 }
             });
+
+            // အုပ်စုတစ်ခုချင်းစီအတွက် သတ်မှတ်ထားသော တန်းဘေးမှာ Badge ထည့်/အသစ်ပြရန်
+            for (let tier in tierMiddleRows) {
+                let targetRowLabel = tierMiddleRows[tier];
+                let badgeEl = document.getElementById('tier-badge-' + tier);
+                if (badgeEl) {
+                    let stat = tierStats[tier];
+                    if (stat.count > 0) {
+                        badgeEl.innerText = `${stat.count}ခုံ / ${stat.total.toLocaleString()} Ks`;
+                        badgeEl.style.display = 'inline-block';
+                    } else {
+                        badgeEl.innerText = '';
+                        badgeEl.style.display = 'none';
+                    }
+                }
+            }
 
             // အပေါ်ဆုံး စုစုပေါင်း summary အတွက်
             for (let seatId in seatData) {
@@ -309,11 +331,16 @@
             labelDiv.innerText = row.label;
             rowDiv.appendChild(labelDiv);
 
-            // တန်းအမည်ဘေးမှာ ပမာဏပြမည့် နေရာ (Subtotal)
-            const subtotalDiv = document.createElement('div');
-            subtotalDiv.className = 'row-subtotal';
-            subtotalDiv.id = 'subtotal-' + row.label;
-            rowDiv.appendChild(subtotalDiv);
+            // အကယ်၍ ဤတန်းသည် သတ်မှတ်ထားသော ဈေးနှုန်းအုပ်စု၏ အလယ်တန်းဖြစ်နေလျှင် စုစုပေါင်းပြမည့် Badge ထည့်ပေးမည်
+            for (let tier in tierMiddleRows) {
+                if (tierMiddleRows[tier] === row.label) {
+                    const badgeDiv = document.createElement('div');
+                    badgeDiv.className = 'tier-summary-badge';
+                    badgeDiv.id = 'tier-badge-' + tier;
+                    badgeDiv.style.display = 'none';
+                    rowDiv.appendChild(badgeDiv);
+                }
+            }
 
             container.appendChild(rowDiv);
         });
