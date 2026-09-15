@@ -12,17 +12,26 @@
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        .screens-nav {
-            background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 15px;
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+        /* ၁၂ ပွဲ Tab များအတွက် သေသပ်သော CSS Styling */
+        .screens-nav-container {
+            background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
+            border: 1px solid #333; width: 100%;
         }
+        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px; text-align: center; }
+        .screens-nav {
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;
+            scroll-behavior: smooth;
+        }
+        .screens-nav::-webkit-scrollbar { height: 6px; }
+        .screens-nav::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
         .screen-tab {
-            background: #333; color: #bbb; border: 1px solid #444; padding: 6px 12px;
+            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 14px;
             border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
-            transition: all 0.2s;
+            display: inline-block; transition: all 0.2s ease; text-align: center;
         }
         .screen-tab:hover { background: #444; color: #fff; }
-        .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
+        .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 8px rgba(255,235,59,0.4); }
 
         .seat-map-outer {
             width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
@@ -39,15 +48,8 @@
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
-        .seat-map-main-layout {
-            display: flex;
-            justify-content: center;
-        }
-
-        .seat-rows-area {
-            display: flex;
-            flex-direction: column;
-        }
+        .seat-map-main-layout { display: flex; justify-content: center; }
+        .seat-rows-area { display: flex; flex-direction: column; }
 
         .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
         .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
@@ -75,8 +77,11 @@
 </head>
 <body>
 
-    <!-- ၃ ရက်စာ ပွဲချိန် ၁၂ မျက်နှာဇယား Tabs များ -->
-    <div class="screens-nav" id="screensNav"></div>
+    <!-- ၃ ရက်စာ၊ တစ်ရက် ၄ ပွဲ စုစုပေါင်း ပွဲချိန် ၁၂ မျက်နှာဇယား Tab များ -->
+    <div class="screens-nav-container">
+        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန်ကို ရွေးချယ်ပါ</div>
+        <div class="screens-nav" id="screensNav"></div>
+    </div>
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
@@ -169,8 +174,8 @@
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
             
-            const dates = globalData.settings?.dates || [];
-            const times = globalData.settings?.times || [];
+            const dates = globalData.settings?.dates || ["", "", ""];
+            const times = globalData.settings?.times || ["", "", "", ""];
             const movies = globalData.settings?.movies || {};
 
             let count = 1;
@@ -179,13 +184,16 @@
                 for (let t = 0; t < 4; t++) {
                     let timeStr = times[t] ? times[t] : `Show ${t+1}`;
                     let sId = `screen_${count}`;
-                    let movieShort = movies[sId] ? ` - ${movies[sId]}` : '';
+                    let movieName = movies[sId] ? movies[sId] : 'ဇာတ်ကားမရှိ';
                     
                     const btn = document.createElement('button');
                     btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerText = `[S${count}] ${dateStr} (${timeStr})${movieShort}`;
+                    btn.innerHTML = `<b>[ပွဲ ${count}]</b> ${dateStr} | ${timeStr}<br><span style="color:#ffeb3b; font-size:11px;">${movieName}</span>`;
+                    
+                    // Closure problem ကာကွယ်ရန် let သုံးထားသည်
+                    let capturedId = sId;
                     btn.onclick = () => {
-                        currentScreenId = sId;
+                        currentScreenId = capturedId;
                         buildScreensNav();
                         updateUI();
                     };
@@ -224,6 +232,7 @@
             });
         }
 
+        // Render Seat Map Structure once
         const container = document.getElementById('seatContainer');
         container.innerHTML = '';
 
@@ -238,7 +247,6 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
-            row.seats.events = [];
             row.seats.forEach(num => {
                 if (num === 0) {
                     const emptyDiv = document.createElement('div');
