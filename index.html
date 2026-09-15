@@ -12,24 +12,34 @@
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        /* Admin ပန်နယ်ပုံစံတူ ၁၂ ခုစာ Screen Tabs များ (အလျားလိုက် ဆွဲလို့ရသည်) */
+        /* ရက်စွဲနှင့် ပွဲချိန်များကို 2x2 Grid ပုံစံဖြင့်ပြသရန် */
         .screens-nav-container {
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
             border: 1px solid #333; width: 100%;
         }
-        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px; text-align: center; }
+        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-align: center; }
         
         .screens-nav {
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; 
-            padding-bottom: 5px; scroll-behavior: smooth; width: 100%;
+            display: flex; flex-direction: column; gap: 12px; width: 100%;
         }
-        .screens-nav::-webkit-scrollbar { height: 6px; }
-        .screens-nav::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        .date-group {
+            background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px;
+        }
+
+        .date-header {
+            font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px; text-align: center;
+            border-bottom: 1px solid #333; padding-bottom: 4px;
+        }
+
+        .times-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+        }
 
         .screen-tab {
-            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 12px;
+            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 6px;
             border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;
-            display: inline-block; transition: all 0.2s ease; text-align: center; flex-shrink: 0;
+            transition: all 0.2s ease; text-align: center; width: 100%;
         }
         .screen-tab:hover { background: #444; color: #fff; }
         .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 8px rgba(255,235,59,0.4); }
@@ -92,9 +102,9 @@
 </head>
 <body>
 
-    <!-- Admin ပန်နယ်ပုံစံ မျက်နှာဇယား ၁၂ ခုစာ Tabs များ -->
+    <!-- ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားများ (Grid ပုံစံ) -->
     <div class="screens-nav-container">
-        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားများကို ဘေးသို့ရွှေ့၍ ရွေးချယ်ပါ</div>
+        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားသို့ပြောင်းကြည့်ပြီးမှ booking တင်ပါ</div>
         <div class="screens-nav" id="screensNav"></div>
     </div>
 
@@ -205,13 +215,26 @@
             let count = 1;
             for (let d = 0; d < 3; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                
+                // ရက်စွဲတစ်ခုချင်းစီအတွက် Container ဆောက်သည်
+                const dateGroup = document.createElement('div');
+                dateGroup.className = 'date-group';
+
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'date-header';
+                dateHeader.innerText = `📅 ${dateStr}`;
+                dateGroup.appendChild(dateHeader);
+
+                const timesGrid = document.createElement('div');
+                timesGrid.className = 'times-grid';
+
                 for (let t = 0; t < 4; t++) {
                     let timeStr = times[t] ? times[t] : `Show ${t+1}`;
                     let sId = `screen_${count}`;
                     
                     const btn = document.createElement('button');
                     btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerText = `(S${count}) ${dateStr} (${timeStr})`;
+                    btn.innerText = timeStr;
                     
                     let capturedId = sId;
                     btn.onclick = () => {
@@ -219,9 +242,11 @@
                         buildScreensNav();
                         updateUI();
                     };
-                    nav.appendChild(btn);
+                    timesGrid.appendChild(btn);
                     count++;
                 }
+                dateGroup.appendChild(timesGrid);
+                nav.appendChild(dateGroup);
             }
         }
 
