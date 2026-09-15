@@ -101,6 +101,7 @@
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
+        /* Seat Map နဲ့ ညာဘက် Summary များကို တန်းတည့်ညီစေရန် Grid Layout သုံးခြင်း */
         .seat-map-main-layout {
             display: flex;
             gap: 20px;
@@ -109,15 +110,16 @@
 
         .seat-rows-area {
             flex-grow: 1;
-        }
-
-        /* ဈေးတန်းအုပ်စုလိုက် ဘေးဘောင်တွင် တိုက်ရိုက်ပြမည့် Box များအတွက် စီစဉ်ပုံ */
-        .tier-summary-sidebar {
-            width: 190px;
-            min-width: 190px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+        }
+
+        /* ညာဘက် Sidebar ကို Seat တန်းများ၏ အမြင့်အချိုးအစားအတိုင်း တိကျစွာ ညှိထားသည် */
+        .tier-summary-sidebar {
+            width: 200px;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
             position: sticky;
             top: 15px;
         }
@@ -129,14 +131,15 @@
             padding: 8px 10px;
             text-align: left;
             font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .tier-box-title {
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 3px;
-            display: flex;
-            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 2px;
         }
 
         .tier-box-details {
@@ -146,16 +149,23 @@
             font-size: 11px;
         }
 
+        /* တစ်တန်းချင်းစီ၏ အမြင့်နှင့် တွက်ချက်ထားသော Box အမြင့်များ */
+        #box-4000 { height: 37px; margin-bottom: 5px; border-left: 4px solid #777670; }
+        #box-5000 { height: 121px; margin-bottom: 5px; border-left: 4px solid #9BBB59; } /* B, C, D (3 rows + gaps) */
+        #box-6000 { height: 79px; margin-bottom: 5px; border-left: 4px solid #FABF8F; }  /* E, F (2 rows + gaps) */
+        #box-7000 { height: 79px; margin-bottom: 19px; border-left: 4px solid #4BACC6; } /* G, H + gap space */
+        #box-8000 { height: 357px; margin-bottom: 19px; border-left: 4px solid #CCC0D9; } /* I to Q (9 rows + gaps) */
+        #box-20000 { height: 79px; margin-bottom: 10px; border-left: 4px solid #B97034; } /* R, S (2 rows) */
+
         .grand-total-box {
             background: #1c2e1c;
             border: 1px solid #2e7d32;
             border-radius: 6px;
             padding: 10px;
             text-align: center;
-            margin-top: 5px;
         }
 
-        .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; }
+        .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
         .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
         
         .seat {
@@ -236,38 +246,37 @@
 
             <div class="screen">SCREEN</div>
             
-            <!-- Seat Map နဲ့ ဈေးတန်းအုပ်စုလိုက်ဘေးဘောင်ကို ဘေးချင်းယှဉ်ပြရန် -->
+            <!-- Seat Map နဲ့ ဈေးတန်းဘေးတည့်တည့် Summary Sidebar -->
             <div class="seat-map-main-layout">
                 <div class="seat-rows-area" id="seatContainer"></div>
                 
-                <!-- ညာဘက်ဘေးတွင် ဈေးတန်းအုပ်စုအလိုက် (A, B-D, E-F, G-H, I-Q, R-S) ပေါင်းစုပြမည့် Sidebar -->
                 <div class="tier-summary-sidebar">
-                    <div class="tier-box" style="border-left: 4px solid #777670;">
-                        <div class="tier-box-title" style="color: #bbb;"><span>A တန်း (4,000)</span></div>
+                    <div class="tier-box" id="box-4000">
+                        <div class="tier-box-title" style="color: #bbb;">A တန်း (4,000)</div>
                         <div class="tier-box-details"><span id="tier-4000-count">0 ခုံ</span><span id="tier-4000-price">0 Ks</span></div>
                     </div>
-                    <div class="tier-box" style="border-left: 4px solid #9BBB59;">
-                        <div class="tier-box-title" style="color: #9BBB59;"><span>B to D တန်း (5,000)</span></div>
+                    <div class="tier-box" id="box-5000">
+                        <div class="tier-box-title" style="color: #9BBB59;">B to D တန်း (5,000)</div>
                         <div class="tier-box-details"><span id="tier-5000-count">0 ခုံ</span><span id="tier-5000-price">0 Ks</span></div>
                     </div>
-                    <div class="tier-box" style="border-left: 4px solid #FABF8F;">
-                        <div class="tier-box-title" style="color: #FABF8F;"><span>E to F တန်း (6,000)</span></div>
+                    <div class="tier-box" id="box-6000">
+                        <div class="tier-box-title" style="color: #FABF8F;">E to F တန်း (6,000)</div>
                         <div class="tier-box-details"><span id="tier-6000-count">0 ခုံ</span><span id="tier-6000-price">0 Ks</span></div>
                     </div>
-                    <div class="tier-box" style="border-left: 4px solid #4BACC6;">
-                        <div class="tier-box-title" style="color: #4BACC6;"><span>G to H တန်း (7,000)</span></div>
+                    <div class="tier-box" id="box-7000">
+                        <div class="tier-box-title" style="color: #4BACC6;">G to H တန်း (7,000)</div>
                         <div class="tier-box-details"><span id="tier-7000-count">0 ခုံ</span><span id="tier-7000-price">0 Ks</span></div>
                     </div>
-                    <div class="tier-box" style="border-left: 4px solid #CCC0D9;">
-                        <div class="tier-box-title" style="color: #CCC0D9;"><span>I to Q တန်း (8,000)</span></div>
+                    <div class="tier-box" id="box-8000">
+                        <div class="tier-box-title" style="color: #CCC0D9;">I to Q တန်း (8,000)</div>
                         <div class="tier-box-details"><span id="tier-8000-count">0 ခုံ</span><span id="tier-8000-price">0 Ks</span></div>
                     </div>
-                    <div class="tier-box" style="border-left: 4px solid #B97034;">
-                        <div class="tier-box-title" style="color: #B97034;"><span>R to S တန်း (20,000)</span></div>
+                    <div class="tier-box" id="box-20000">
+                        <div class="tier-box-title" style="color: #B97034;">R to S တန်း (20,000)</div>
                         <div class="tier-box-details"><span id="tier-20000-count">0 ခုံ</span><span id="tier-20000-price">0 Ks</span></div>
                     </div>
 
-                    <div class="grand-total-box">
+                    <div class="grand-total-box" style="margin-top: 5px;">
                         <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ</div>
                         <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
                     </div>
