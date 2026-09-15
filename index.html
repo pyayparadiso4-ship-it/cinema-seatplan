@@ -148,7 +148,7 @@
     </div>
 
     <div class="notice-box">
-        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ ရွေးပြီးပါက အောက်နားရှိ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ခလုတ်ကို နှိပ်၍ ငွေချေရန် ဆက်သွယ်နိုင်ပါသည်။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်လိုက်ပါက မှာယူလိုသော ခုံအချက်အလက်များကို ဖုန်းထဲတွင် Copy ကူးပြီး Viber ဆီသို့ တိုက်ရိုက်ခေါ်ဆောင်သွားပါမည်။ (Viber Chat ထဲရောက်လျှင် ဖိပြီး Paste လုပ်ကာ ပို့လိုက်ရုံပါပဲ)။
     </div>
 
     <script>
@@ -336,9 +336,15 @@
 
             let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
 
-            // တိုက်ရိုက် Chat ဖွင့်ရန်အတွက် viber://chat?number= ကို အသုံးပြုခြင်း
-            let viberUrl = `viber://chat?number=%2B959457143360&text=${encodeURIComponent(message)}`;
-            window.location.href = viberUrl;
+            // ၁။ ဖုန်း၏ Clipboard ထဲသို့ စာသားကို အလိုအလျောက် Copy ကူးပေးခြင်း
+            navigator.clipboard.writeText(message).then(() => {
+                alert("ခုံအချက်အလက်များကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
+                // ၂။ သင့်နံပါတ်ဆီသို့ Viber Chat ဖွင့်ပေးခြင်း
+                window.location.href = `viber://chat?number=%2B959457143360`;
+            }).catch(err => {
+                // Clipboard error ရှိလျှင် တိုက်ရိုက် Viber ဆီ ခေါ်ဆောင်မည်
+                window.location.href = `viber://chat?number=%2B959457143360`;
+            });
         }
 
         const container = document.getElementById('seatContainer');
