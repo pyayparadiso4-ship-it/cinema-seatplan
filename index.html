@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paradiso Pyay Cinema - Multi-Show & Movie Management</title>
+    <title>Paradiso Pyay Cinema - Realtime Management</title>
     
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
@@ -25,7 +29,6 @@
         }
         .reset-btn:hover { background: #b71c1c; }
 
-        /* ဆက်တင်များ ပြင်ဆင်ရန် Admin Panel (Collapsible) */
         .settings-panel {
             background: #1a1a1a; border: 1px solid #444; border-radius: 8px;
             margin-bottom: 15px; overflow: hidden;
@@ -41,7 +44,6 @@
 
         .settings-body {
             padding: 12px 15px; display: flex; flex-direction: column; gap: 10px;
-            transition: max-height 0.3s ease;
         }
         .settings-body.hidden { display: none; }
 
@@ -73,7 +75,6 @@
         }
         .save-settings-btn:hover { background: #1b5e20; }
 
-        /* မျက်နှာပြင် ၁၂ ခု ရွေးရန် Tabs */
         .screens-nav {
             background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 12px;
             display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
@@ -111,12 +112,6 @@
         .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; }
         .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
         
-        .tier-summary-badge {
-            margin-left: 12px; font-size: 11px; color: #ffeb3b; font-weight: bold;
-            background: #2a2a2a; padding: 4px 10px; border-radius: 4px; border: 1px solid #444;
-            min-width: 130px; display: inline-block; text-align: center;
-        }
-
         .seat {
             width: 25px; height: 30px; min-width: 25px; border-radius: 3px; font-size: 11px;
             display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
@@ -136,35 +131,6 @@
         .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
         .admin-purple { background-color: #9933ee !important; color: white !important; }
 
-        /* ပုံထဲက ပြထားတဲ့ အလွတ်နေရာအတွက် Refresh ခလုတ်စတိုင် */
-        .refresh-spot-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            vertical-align: middle;
-            margin: 0 10px;
-        }
-        .refresh-custom-btn {
-            background: #252525;
-            color: #ffeb3b;
-            border: 1px solid #555;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        .refresh-custom-btn:hover {
-            background: #333;
-            border-color: #ffeb3b;
-            transform: scale(1.05);
-        }
-
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
@@ -172,7 +138,6 @@
 </head>
 <body>
 
-    <!-- Admin အရောင်ရွေးချယ်မှု -->
     <div class="admin-controls">
         <span><b>အရောင်:</b></span>
         <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ (ရောင်းပြီး)</button>
@@ -182,7 +147,6 @@
         <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Screen (3 Clicks)</button>
     </div>
 
-    <!-- ဇက်စွဲ၊ ပွဲချိန်နှင့် ဇာတ်ကားနာမည်များ -->
     <div class="settings-panel">
         <div class="settings-header" onclick="toggleSettingsPanel()">
             <span>⚙️ ရက်စွဲ၊ ပွဲချိန် နှင့် ဇာတ်ကားနာမည်များ သတ်မှတ်ရန် (ဆက်တင်များ)</span>
@@ -209,13 +173,12 @@
                 <div class="movie-inputs-grid" id="movieInputsContainer"></div>
             </div>
             <div class="settings-footer-row">
-                <span style="font-size: 11px; color: #888;">ပြင်ဆင်ပြီးပါက သိမ်းရန် နှိပ်ပါ</span>
-                <button class="save-settings-btn" onclick="saveSettings()">💾 ပြောင်းလဲမှုများ သိမ်းမည်</button>
+                <span style="font-size: 11px; color: #888;">ပြင်ဆင်ပြီးပါက Cloud သို့ တိုက်ရိုက်သိမ်းမည်</span>
+                <button class="save-settings-btn" onclick="saveSettings()">💾 ဆက်တင်များကို Cloud သို့ သိမ်းမည်</button>
             </div>
         </div>
     </div>
 
-    <!-- မျက်နှာပြင် ၁၂ ခု ရွေးရန် ခလုတ်များ -->
     <div class="screens-nav" id="screensNav"></div>
 
     <div class="summary-box">
@@ -248,41 +211,51 @@
     </div>
 
     <script>
-        const BIN_ID = '6aa8158aac6210605acc1a7f';
-        const MASTER_KEY = '$2a$10$94t7BlS7aMJLcAdmpU3fUey997kEKnb1UMi7ChtoJCbeAnz3mKwaS';
-        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        // ======= FIREBASE CONFIG =======
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGAkbIY8C4b6Phof90nq-8EyodCanSpWI",
+            authDomain: "paradiso-cinema-flefb.firebaseapp.com",
+            databaseURL: "https://paradiso-cinema-flefb-default-rtdb.firebaseio.com",
+            projectId: "paradiso-cinema-flefb",
+            storageBucket: "paradiso-cinema-flefb.appspot.com",
+            messagingSenderId: "419300558424",
+            appId: "1:419300558424:web:5e2f70eb48fb4468fbicae",
+            measurementId: "G-M7ZWVE2KTX"
+        };
+        // ===============================
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
         const seatStructure = [
-            { label: 'A', price: 4000, tier: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'B', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'C', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'D', price: 5000, tier: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'E', price: 6000, tier: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'F', price: 6000, tier: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'G', price: 7000, tier: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
-            { label: 'H', price: 7000, tier: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'A', price: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'B', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'C', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'D', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'E', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'F', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { type: 'gap' },
-            { label: 'I', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'J', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'K', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'L', price: 8000, tier: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'M', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 'refresh_btn_slot', 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'N', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'O', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'P', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'Q', price: 8000, tier: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { type: 'gap' },
-            { label: 'R', price: 20000, tier: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
-            { label: 'S', price: 20000, tier: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
         ];
-
-        const tierMiddleRows = { 4000: 'A', 5000: 'C', 6000: 'F', 7000: 'H', 8000: 'M', 20000: 'S' };
 
         let selectedAdminColor = null;
         let globalData = {
             settings: {
-                dates: ["2026-06-01", "2026-06-02", "2026-06-03"],
-                times: ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"],
+                dates: ["", "", ""],
+                times: ["", "", "", ""],
                 movies: {}
             },
             screens: {}
@@ -302,66 +275,30 @@
             arrow.classList.toggle('collapsed');
         }
 
-        async function fetchBinData() {
-            try {
-                const response = await fetch(API_URL + '/latest', {
-                    headers: { 'X-Master-Key': MASTER_KEY }
-                });
-                const result = await response.json();
-                if (result.record && Object.keys(result.record).length > 0) {
-                    globalData = result.record;
+        function initFirebaseSync() {
+            database.ref('paradiso_cinema').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    globalData = data;
                 }
                 initSettingsUI();
                 buildScreensNav();
                 updateUI();
-            } catch (err) {
-                console.error("Error fetching data", err);
-                initSettingsUI();
-                buildScreensNav();
-                updateUI();
-            }
-        }
-
-        async function saveBinData() {
-            try {
-                await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
-                    },
-                    body: JSON.stringify(globalData)
-                });
-            } catch (err) {
-                console.error("Error saving data", err);
-            }
-        }
-
-        // ညွှန်ပြထားတဲ့ နေရာမှာ ထည့်ထားတဲ့ Refresh လုပ်ဆောင်ချက်
-        async function refreshData() {
-            const btn = document.getElementById('refreshCustomBtn');
-            if(btn) btn.innerText = "⏳ ဆွဲနေသည်...";
-            await fetchBinData();
-            if(btn) btn.innerText = "🔄 ဒေတာအသစ်ရယူရန်";
-            alert('ဒေတာအသစ်များကို အောင်မြင်စွာ ဆွဲယူပြီးပါပြီ!');
+            });
         }
 
         function initSettingsUI() {
             if (!globalData.settings) {
-                globalData.settings = {
-                    dates: ["2026-06-01", "2026-06-02", "2026-06-03"],
-                    times: ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"],
-                    movies: {}
-                };
+                globalData.settings = { dates: [], times: [], movies: {} };
             }
-            document.getElementById('date1').value = globalData.settings.dates[0] || '';
-            document.getElementById('date2').value = globalData.settings.dates[1] || '';
-            document.getElementById('date3').value = globalData.settings.dates[2] || '';
+            document.getElementById('date1').value = globalData.settings.dates?.[0] || '';
+            document.getElementById('date2').value = globalData.settings.dates?.[1] || '';
+            document.getElementById('date3').value = globalData.settings.dates?.[2] || '';
 
-            document.getElementById('time1').value = globalData.settings.times[0] || '';
-            document.getElementById('time2').value = globalData.settings.times[1] || '';
-            document.getElementById('time3').value = globalData.settings.times[2] || '';
-            document.getElementById('time4').value = globalData.settings.times[3] || '';
+            document.getElementById('time1').value = globalData.settings.times?.[0] || '';
+            document.getElementById('time2').value = globalData.settings.times?.[1] || '';
+            document.getElementById('time3').value = globalData.settings.times?.[2] || '';
+            document.getElementById('time4').value = globalData.settings.times?.[3] || '';
 
             const movieContainer = document.getElementById('movieInputsContainer');
             movieContainer.innerHTML = '';
@@ -376,7 +313,7 @@
             }
         }
 
-        async function saveSettings() {
+        function saveSettings() {
             globalData.settings.dates = [
                 document.getElementById('date1').value,
                 document.getElementById('date2').value,
@@ -395,19 +332,18 @@
                 globalData.settings.movies[`screen_${i}`] = val;
             }
 
-            buildScreensNav();
-            updateUI();
-            await saveBinData();
-            alert('ဆက်တင်များနှင့် ဇာတ်ကားနာမည်များကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
+            database.ref('paradiso_cinema').set(globalData).then(() => {
+                alert('ဆက်တင်များကို Cloud သို့ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
+            });
         }
 
         function buildScreensNav() {
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
             
-            const dates = globalData.settings.dates;
-            const times = globalData.settings.times;
-            const movies = globalData.settings.movies || {};
+            const dates = globalData.settings?.dates || [];
+            const times = globalData.settings?.times || [];
+            const movies = globalData.settings?.movies || {};
 
             let count = 1;
             for (let d = 0; d < 3; d++) {
@@ -442,9 +378,9 @@
             let dIndex = Math.floor(screenIndex / 4);
             let tIndex = screenIndex % 4;
             
-            let dateText = (globalData.settings.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
-            let timeText = (globalData.settings.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
-            let movieName = (globalData.settings.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
+            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
 
             document.getElementById('displayMovieTitle').innerText = movieName;
             document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
@@ -465,36 +401,6 @@
             let screenSeats = getActiveScreenSeats();
             let counts = { red: 0, yellow: 0, purple: 0 };
             let prices = { red: 0, yellow: 0, purple: 0 };
-
-            let tierStats = { 4000: { count: 0, total: 0 }, 5000: { count: 0, total: 0 }, 6000: { count: 0, total: 0 }, 7000: { count: 0, total: 0 }, 8000: { count: 0, total: 0 }, 20000: { count: 0, total: 0 } };
-
-            seatStructure.forEach(row => {
-                if (row.type !== 'gap') {
-                    row.seats.forEach(num => {
-                        if (num !== 0 && num !== 'refresh_btn_slot') {
-                            let seatId = 'seat-' + row.label + '-' + num;
-                            if (screenSeats[seatId]) {
-                                tierStats[row.tier].count++;
-                                tierStats[row.tier].total += row.price;
-                            }
-                        }
-                    });
-                }
-            });
-
-            for (let tier in tierMiddleRows) {
-                let badgeEl = document.getElementById('tier-badge-' + tier);
-                if (badgeEl) {
-                    let stat = tierStats[tier];
-                    if (stat.count > 0) {
-                        badgeEl.innerText = `${stat.count}ခုံ / ${stat.total.toLocaleString()} Ks`;
-                        badgeEl.style.display = 'inline-block';
-                    } else {
-                        badgeEl.innerText = '';
-                        badgeEl.style.display = 'none';
-                    }
-                }
-            }
 
             for (let seatId in screenSeats) {
                 let color = screenSeats[seatId];
@@ -534,40 +440,32 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
-            row.seats.forEach(item => {
-                if (item === 0) {
+            row.seats.forEach(num => {
+                if (num === 0) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'empty';
                     rowDiv.appendChild(emptyDiv);
-                } else if (item === 'refresh_btn_slot') {
-                    // ညွှန်ပြထားတဲ့ နေရာမှာ Refresh ခလုတ်ထည့်ရန်
-                    const spotDiv = document.createElement('div');
-                    spotDiv.className = 'refresh-spot-container';
-                    spotDiv.innerHTML = `<button id="refreshCustomBtn" class="refresh-custom-btn" onclick="refreshData()">🔄 Refresh</button>`;
-                    rowDiv.appendChild(spotDiv);
                 } else {
                     const seatBtn = document.createElement('div');
-                    const seatId = 'seat-' + row.label + '-' + item;
+                    const seatId = 'seat-' + row.label + '-' + num;
                     seatBtn.id = seatId;
                     seatBtn.className = `seat ${row.class}`;
-                    seatBtn.innerText = item;
+                    seatBtn.innerText = num;
                     
-                    seatBtn.onclick = async () => {
+                    seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
                             alert('ကျေးဇူးပြု၍ အပေါ်ဘက်မှ အနီ/အဝါ/ခရမ်း ရောင်တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
                             return;
                         }
                         let screenSeats = getActiveScreenSeats();
                         screenSeats[seatId] = selectedAdminColor;
-                        updateUI();
-                        await saveBinData();
+                        database.ref('paradiso_cinema').set(globalData);
                     };
 
-                    seatBtn.ondblclick = async () => {
+                    seatBtn.ondblclick = () => {
                         let screenSeats = getActiveScreenSeats();
                         delete screenSeats[seatId];
-                        updateUI();
-                        await saveBinData();
+                        database.ref('paradiso_cinema').set(globalData);
                     };
 
                     rowDiv.appendChild(seatBtn);
@@ -579,23 +477,13 @@
             labelDiv.innerText = row.label;
             rowDiv.appendChild(labelDiv);
 
-            for (let tier in tierMiddleRows) {
-                if (tierMiddleRows[tier] === row.label) {
-                    const badgeDiv = document.createElement('div');
-                    badgeDiv.className = 'tier-summary-badge';
-                    badgeDiv.id = 'tier-badge-' + tier;
-                    badgeDiv.style.display = 'none';
-                    rowDiv.appendChild(badgeDiv);
-                }
-            }
-
             container.appendChild(rowDiv);
         });
 
         let resetClickCount = 0;
         let resetTimer = null;
 
-        async function handleResetClick() {
+        function handleResetClick() {
             resetClickCount++;
             const resetBtn = document.getElementById('resetBtn');
             const remaining = 3 - resetClickCount;
@@ -610,8 +498,7 @@
             } else {
                 clearTimeout(resetTimer);
                 globalData.screens[currentScreenId] = {};
-                updateUI();
-                await saveBinData();
+                database.ref('paradiso_cinema').set(globalData);
 
                 resetClickCount = 0;
                 resetBtn.innerText = 'Cleared!';
@@ -621,7 +508,7 @@
             }
         }
 
-        fetchBinData();
+        initFirebaseSync();
     </script>
 </body>
 </html>
