@@ -211,7 +211,7 @@
     </div>
 
     <script>
-        // ======= FIREBASE CONFIG (သင့်အကောင့်အချက်အလက်များ ထည့်ပြီးပါပြီ) =======
+        // ======= FIREBASE CONFIG =======
         const firebaseConfig = {
             apiKey: "AIzaSyCGAkbIY8C4b6Phof90nq-8EyodCanSpWI",
             authDomain: "paradiso-cinema-flefb.firebaseapp.com",
@@ -222,7 +222,7 @@
             appId: "1:419300558424:web:5e2f70eb48fb4468fbicae",
             measurementId: "G-M7ZWVE2KTX"
         };
-        // ========================================================
+        // ===============================
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -280,6 +280,9 @@
                 const data = snapshot.val();
                 if (data) {
                     globalData = data;
+                } else {
+                    // အကယ်၍ Database ထဲ ဘာမှမရှိသေးရင် Default အနေနဲ့ တန်းသိမ်းပေးမယ်
+                    database.ref('paradiso_cinema').set(globalData);
                 }
                 initSettingsUI();
                 buildScreensNav();
@@ -289,16 +292,16 @@
 
         function initSettingsUI() {
             if (!globalData.settings) {
-                globalData.settings = { dates: [], times: [], movies: {} };
+                globalData.settings = { dates: ["2026-06-01", "2026-06-02", "2026-06-03"], times: ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"], movies: {} };
             }
-            document.getElementById('date1').value = globalData.settings.dates?.[0] || '';
-            document.getElementById('date2').value = globalData.settings.dates?.[1] || '';
-            document.getElementById('date3').value = globalData.settings.dates?.[2] || '';
+            document.getElementById('date1').value = globalData.settings.dates?.[0] || '2026-06-01';
+            document.getElementById('date2').value = globalData.settings.dates?.[1] || '2026-06-02';
+            document.getElementById('date3').value = globalData.settings.dates?.[2] || '2026-06-03';
 
-            document.getElementById('time1').value = globalData.settings.times?.[0] || '';
-            document.getElementById('time2').value = globalData.settings.times?.[1] || '';
-            document.getElementById('time3').value = globalData.settings.times?.[2] || '';
-            document.getElementById('time4').value = globalData.settings.times?.[3] || '';
+            document.getElementById('time1').value = globalData.settings.times?.[0] || '10:00 AM';
+            document.getElementById('time2').value = globalData.settings.times?.[1] || '01:00 PM';
+            document.getElementById('time3').value = globalData.settings.times?.[2] || '04:00 PM';
+            document.getElementById('time4').value = globalData.settings.times?.[3] || '07:00 PM';
 
             const movieContainer = document.getElementById('movieInputsContainer');
             movieContainer.innerHTML = '';
@@ -341,8 +344,8 @@
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
             
-            const dates = globalData.settings?.dates || [];
-            const times = globalData.settings?.times || [];
+            const dates = globalData.settings?.dates || ["2026-06-01", "2026-06-02", "2026-06-03"];
+            const times = globalData.settings?.times || ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"];
             const movies = globalData.settings?.movies || {};
 
             let count = 1;
@@ -378,9 +381,13 @@
             let dIndex = Math.floor(screenIndex / 4);
             let tIndex = screenIndex % 4;
             
-            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
-            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
-            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
+            let dates = globalData.settings?.dates || ["2026-06-01", "2026-06-02", "2026-06-03"];
+            let times = globalData.settings?.times || ["10:00 AM", "01:00 PM", "04:00 PM", "07:00 PM"];
+            let movies = globalData.settings?.movies || {};
+
+            let dateText = dates[dIndex] ? dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = times[tIndex] ? times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = movies[currentScreenId] ? movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
 
             document.getElementById('displayMovieTitle').innerText = movieName;
             document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
