@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paradiso Pyay Cinema - Realtime Management</title>
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -211,18 +210,18 @@
     </div>
 
     <script>
-        // ======= FIREBASE CONFIG =======
+        // ======= FIREBASE CONFIG (Database URL ဖြင့် ပေါင်းစပ်ထားသည်) =======
         const firebaseConfig = {
-            apiKey: "AIzaSyCGAkbIY8C4b6Phof90nq-8EyodCanSpWI",
-            authDomain: "paradiso-cinema-flefb.firebaseapp.com",
-            databaseURL: "https://paradiso-cinema-flefb-default-rtdb.firebaseio.com",
-            projectId: "paradiso-cinema-flefb",
-            storageBucket: "paradiso-cinema-flefb.appspot.com",
-            messagingSenderId: "419300558424",
-            appId: "1:419300558424:web:5e2f70eb48fb4468fbicae",
-            measurementId: "G-M7ZWVE2KTX"
+            apiKey: "AIzaSyCZSob8_C6Bspj8mLiOXtkFqvPg5PDTj_4",
+            authDomain: "paradisopyayseatplan.firebaseapp.com",
+            databaseURL: "https://paradisopyayseatplancinema-default-rtdb.firebaseio.com",
+            projectId: "paradisopyayseatplan",
+            storageBucket: "paradisopyayseatplan.firebasestorage.app",
+            messagingSenderId: "985120964759",
+            appId: "1:985120964759:web:3a90ed2a477b5cecfce9d2",
+            measurementId: "G-2Z9RVC7QWF"
         };
-        // ===============================
+        // =================================================================
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -276,11 +275,10 @@
         }
 
         function initFirebaseSync() {
-            database.ref('/').on('value', (snapshot) => {
+            database.ref('paradiso_cinema').on('value', (snapshot) => {
                 const data = snapshot.val();
-                console.log("Firebase Data Loaded:", data);
-                if (data && data.paradiso_cinema) {
-                    globalData = data.paradiso_cinema;
+                if (data) {
+                    globalData = data;
                 } else {
                     globalData = {
                         settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
@@ -290,8 +288,6 @@
                 initSettingsUI();
                 buildScreensNav();
                 updateUI();
-            }, (error) => {
-                console.error("Firebase Read Error:", error);
             });
         }
 
@@ -343,7 +339,7 @@
             database.ref('paradiso_cinema').set(globalData).then(() => {
                 alert('ဆက်တင်များကို Cloud သို့ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
             }).catch((error) => {
-                alert('သိမ်းဆည်းရာတွင် အမှားရှိ습니다: ' + error.message);
+                alert('သိမ်းဆည်းရာတွင် အမှားရှိသည်: ' + error.message);
             });
         }
 
@@ -493,31 +489,31 @@
         let resetClickCount = 0;
         let resetTimer = null;
 
-        let resetBtn = document.getElementById('resetBtn');
-        if(resetBtn) {
-            resetBtn.onclick = function() {
-                resetClickCount++;
-                const remaining = 3 - resetClickCount;
+        function handleResetClick() {
+            let resetBtn = document.getElementById('resetBtn');
+            resetClickCount++;
+            const remaining = 3 - resetClickCount;
 
-                if (resetClickCount < 3) {
-                    resetBtn.innerText = `Click ${remaining} More Times`;
-                    clearTimeout(resetTimer);
-                    resetTimer = setTimeout(() => {
-                        resetClickCount = 0;
-                        resetBtn.innerText = 'Reset Screen (3 Clicks)';
-                    }, 2000);
-                } else {
-                    clearTimeout(resetTimer);
-                    globalData.screens[currentScreenId] = {};
-                    database.ref('paradiso_cinema').set(globalData);
-
+            if (resetClickCount < 3) {
+                resetBtn.innerText = `Click ${remaining} More Times`;
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => {
                     resetClickCount = 0;
-                    resetBtn.innerText = 'Cleared!';
-                    setTimeout(() => {
-                        resetBtn.innerText = 'Reset Screen (3 Clicks)';
-                    }, 1500);
+                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
+                }, 2000);
+            } else {
+                clearTimeout(resetTimer);
+                if (globalData.screens && globalData.screens[currentScreenId]) {
+                    globalData.screens[currentScreenId] = {};
                 }
-            };
+                database.ref('paradiso_cinema').set(globalData);
+
+                resetClickCount = 0;
+                resetBtn.innerText = 'Cleared!';
+                setTimeout(() => {
+                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
+                }, 1500);
+            }
         }
 
         initFirebaseSync();
