@@ -133,6 +133,7 @@
 
     <div class="booking-panel">
         <div class="selected-info" id="selectedInfoText">ရွေးချယ်ထားသော ခုံများ: <b id="selectedSeatsListText">မရှိသေးပါ</b></div>
+        <div class="selected-info" id="totalAmountText" style="margin-top: 5px;">စုစုပေါင်း ကျသင့်ငွေ: <b id="totalAmountVal">0 ကျပ်</b></div>
         <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
     </div>
 
@@ -148,7 +149,7 @@
     </div>
 
     <div class="notice-box">
-        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်လိုက်ပါက မှာယူလိုသော ခုံအချက်အလက်များကို ဖုန်းထဲတွင် Copy ကူးပြီး Viber ဆီသို့ တိုက်ရိုက်ခေါ်ဆောင်သွားပါမည်။ (Viber Chat ထဲရောက်လျှင် ဖိပြီး Paste လုပ်ကာ ပို့လိုက်ရုံပါပဲ)။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက မှာယူထားသော ခုံများနှင့် ကျသင့်ငွေ Total Amount စာသားများ Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
     </div>
 
     <script>
@@ -266,6 +267,20 @@
             return globalData.screens[currentScreenId];
         }
 
+        function calculateTotalPrice() {
+            let total = 0;
+            selectedSeats.forEach(seatId => {
+                // seatId format: seat-A-5
+                let parts = seatId.replace('seat-', '').split('-');
+                let rowLabel = parts[0];
+                let rowData = seatStructure.find(r => r.label === rowLabel);
+                if (rowData) {
+                    total += rowData.price;
+                }
+            });
+            return total;
+        }
+
         function updateUI() {
             let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
             let dIndex = Math.floor(screenIndex / 4);
@@ -309,14 +324,20 @@
 
         function updateSelectedSeatsDisplay() {
             const listText = document.getElementById('selectedSeatsListText');
+            const totalVal = document.getElementById('totalAmountVal');
             const btn = document.getElementById('viberConfirmBtn');
 
             if (selectedSeats.length > 0) {
                 let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', ''));
                 listText.innerText = formattedSeats.join(', ');
+                
+                let totalPrice = calculateTotalPrice();
+                totalVal.innerText = totalPrice.toLocaleString() + ' ကျပ်';
+                
                 btn.disabled = false;
             } else {
                 listText.innerText = "မရှိသေးပါ";
+                totalVal.innerText = "0 ကျပ်";
                 btn.disabled = true;
             }
         }
@@ -333,16 +354,14 @@
             let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကား';
 
             let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', '')).join(', ');
+            let totalPrice = calculateTotalPrice().toLocaleString() + ' ကျပ်';
 
-            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
+            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) - စုစုပေါင်းကျသင့်ငွေ: ${totalPrice} ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
 
-            // ၁။ ဖုန်း၏ Clipboard ထဲသို့ စာသားကို အလိုအလျောက် Copy ကူးပေးခြင်း
             navigator.clipboard.writeText(message).then(() => {
-                alert("ခုံအချက်အလက်များကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
-                // ၂။ သင့်နံပါတ်ဆီသို့ Viber Chat ဖွင့်ပေးခြင်း
+                alert("ခုံနံပါတ်များနှင့် ကျသင့်ငွေ (Total Amount) ကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
                 window.location.href = `viber://chat?number=%2B959457143360`;
             }).catch(err => {
-                // Clipboard error ရှိလျှင် တိုက်ရိုက် Viber ဆီ ခေါ်ဆောင်မည်
                 window.location.href = `viber://chat?number=%2B959457143360`;
             });
         }
