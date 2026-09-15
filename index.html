@@ -80,17 +80,13 @@
         .price-8000 { background-color: #CCC0D9; }
         .price-20000 { background-color: #B97034; color: #fff; }
 
-        /* Admin ရောင်းပြီးသားခုံ (အနီရောင်) - နှိပ်လို့မရပါ */
         .admin-red { background-color: #ff3333 !important; color: white !important; cursor: not-allowed !important; pointer-events: none; }
-
-        /* Customer ကိုယ်တိုင်ရွေးထားသောခုံ (အစိမ်းရောင်တောက်တောက်) */
         .customer-selected { background-color: #00ff66 !important; color: #000 !important; box-shadow: 0 0 8px #00ff66; }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
 
-        /* Booking Control Panel (အောက်ဆုံးတွင်ပေါ်မည့် Summary နှင့် Button) */
         .booking-panel {
             margin-top: 20px; background: #1a1a1a; border: 2px solid #ffeb3b;
             padding: 15px; border-radius: 8px; text-align: center;
@@ -135,7 +131,6 @@
         </div>
     </div>
 
-    <!-- Customer ရွေးချယ်ထားမှုကို ပြသပြီး Viber သို့ ပို့မည့် Panel -->
     <div class="booking-panel">
         <div class="selected-info" id="selectedInfoText">ရွေးချယ်ထားသော ခုံများ: <b id="selectedSeatsListText">မရှိသေးပါ</b></div>
         <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
@@ -200,7 +195,7 @@
             screens: {}
         };
         let currentScreenId = 'screen_1';
-        let selectedSeats = []; // Customer ရွေးထားသော ခုံများ သိမ်းရန်
+        let selectedSeats = [];
 
         function initFirebaseSync() {
             database.ref('paradiso_cinema').on('value', (snapshot) => {
@@ -253,7 +248,7 @@
                     let capturedId = sId;
                     btn.onclick = () => {
                         currentScreenId = capturedId;
-                        selectedSeats = []; // Screen ပြောင်းလျှင် ရွေးထားသည်များ ရှင်းထုတ်မည်
+                        selectedSeats = [];
                         buildScreensNav();
                         updateUI();
                     };
@@ -289,12 +284,9 @@
                 const seatId = seat.id;
                 seat.classList.remove('admin-red', 'customer-selected');
                 
-                // Admin ဘက်က ရောင်းပြီးသား (အနီရောင်)
                 if (screenSeats[seatId]) {
                     seat.classList.add('admin-red');
-                } 
-                // Customer ကိုယ်တိုင်ရွေးထားပြီးသား
-                else if (selectedSeats.includes(seatId)) {
+                } else if (selectedSeats.includes(seatId)) {
                     seat.classList.add('customer-selected');
                 }
             });
@@ -304,14 +296,13 @@
 
         function handleSeatClick(seatId) {
             let screenSeats = getActiveScreenSeats();
-            // Admin ရောင်းပြီးသားဆိုလျှင် မရွေးနိုင်ပါ
             if (screenSeats[seatId]) return;
 
             const index = selectedSeats.indexOf(seatId);
             if (index > -1) {
-                selectedSeats.splice(index, 1); // ပြန်နှိပ်လျှင် ဖယ်မည်
+                selectedSeats.splice(index, 1);
             } else {
-                selectedSeats.push(seatId); // အသစ်ထည့်မည်
+                selectedSeats.push(seatId);
             }
             updateUI();
         }
@@ -321,7 +312,6 @@
             const btn = document.getElementById('viberConfirmBtn');
 
             if (selectedSeats.length > 0) {
-                // readable seat names (eg: seat-A-5 -> A5)
                 let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', ''));
                 listText.innerText = formattedSeats.join(', ');
                 btn.disabled = false;
@@ -346,8 +336,8 @@
 
             let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
 
-            // သင့်ရဲ့ Viber ဖုန်းနံပါတ် (+959457143360) သို့ Deep Link ဖြင့် ပို့ဆောင်ခြင်း
-            let viberUrl = `viber://forward?text=${encodeURIComponent(message)}`;
+            // တိုက်ရိုက် Chat ဖွင့်ရန်အတွက် viber://chat?number= ကို အသုံးပြုခြင်း
+            let viberUrl = `viber://chat?number=%2B959457143360&text=${encodeURIComponent(message)}`;
             window.location.href = viberUrl;
         }
 
