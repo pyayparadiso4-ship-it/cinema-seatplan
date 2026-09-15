@@ -86,18 +86,11 @@
         .screen-tab:hover { background: #444; color: #fff; }
         .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
 
-        .summary-box {
-            background: #1e1e1e; border: 1px solid #333; padding: 12px; border-radius: 8px;
-            margin-bottom: 15px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-around;
-        }
-        .summary-item { text-align: center; font-size: 12px; background: #252525; padding: 8px 10px; border-radius: 6px; flex: 1; min-width: 110px; }
-        .summary-item span { display: block; font-weight: bold; font-size: 14px; margin-top: 2px; }
-
         .seat-map-outer {
             width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 980px; width: 100%; }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
         
         .movie-display-header {
             text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
@@ -108,6 +101,60 @@
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
+        .seat-map-main-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .seat-rows-area {
+            flex-grow: 1;
+        }
+
+        /* ဈေးတန်းအုပ်စုလိုက် ဘေးဘောင်တွင် တိုက်ရိုက်ပြမည့် Box များအတွက် စီစဉ်ပုံ */
+        .tier-summary-sidebar {
+            width: 190px;
+            min-width: 190px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: sticky;
+            top: 15px;
+        }
+
+        .tier-box {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        .tier-box-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tier-box-details {
+            color: #ccc;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+
+        .grand-total-box {
+            background: #1c2e1c;
+            border: 1px solid #2e7d32;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
         .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; }
         .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
         
@@ -180,17 +227,6 @@
 
     <div class="screens-nav" id="screensNav"></div>
 
-    <!-- ဈေးတန်းအလိုက် (Price Tiers) စုစုပေါင်းပြမည့် Summary Box -->
-    <div class="summary-box">
-        <div class="summary-item">4,000 (A): <span id="tier-4000-count">0 ခုံ</span><span id="tier-4000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item">5,000 (B-D): <span id="tier-5000-count">0 ခုံ</span><span id="tier-5000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item">6,000 (E-F): <span id="tier-6000-count">0 ခုံ</span><span id="tier-6000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item">7,000 (G-H): <span id="tier-7000-count">0 ခုံ</span><span id="tier-7000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item">8,000 (I-Q): <span id="tier-8000-count">0 ခုံ</span><span id="tier-8000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item">20,000 (R-S): <span id="tier-20000-count">0 ခုံ</span><span id="tier-20000-price" style="color:#aaa; font-size:11px;">0 Ks</span></div>
-        <div class="summary-item" style="color: #ffeb3b; border: 1px solid #ffeb3b; min-width: 140px;">စုစုပေါင်းဝင်ငွေ: <span id="grand-total-price" style="font-size: 16px;">0</span> Ks</div>
-    </div>
-
     <div class="seat-map-outer">
         <div class="seat-map-inner">
             <div class="movie-display-header">
@@ -199,7 +235,44 @@
             </div>
 
             <div class="screen">SCREEN</div>
-            <div id="seatContainer"></div>
+            
+            <!-- Seat Map နဲ့ ဈေးတန်းအုပ်စုလိုက်ဘေးဘောင်ကို ဘေးချင်းယှဉ်ပြရန် -->
+            <div class="seat-map-main-layout">
+                <div class="seat-rows-area" id="seatContainer"></div>
+                
+                <!-- ညာဘက်ဘေးတွင် ဈေးတန်းအုပ်စုအလိုက် (A, B-D, E-F, G-H, I-Q, R-S) ပေါင်းစုပြမည့် Sidebar -->
+                <div class="tier-summary-sidebar">
+                    <div class="tier-box" style="border-left: 4px solid #777670;">
+                        <div class="tier-box-title" style="color: #bbb;"><span>A တန်း (4,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-4000-count">0 ခုံ</span><span id="tier-4000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" style="border-left: 4px solid #9BBB59;">
+                        <div class="tier-box-title" style="color: #9BBB59;"><span>B to D တန်း (5,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-5000-count">0 ခုံ</span><span id="tier-5000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" style="border-left: 4px solid #FABF8F;">
+                        <div class="tier-box-title" style="color: #FABF8F;"><span>E to F တန်း (6,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-6000-count">0 ခုံ</span><span id="tier-6000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" style="border-left: 4px solid #4BACC6;">
+                        <div class="tier-box-title" style="color: #4BACC6;"><span>G to H တန်း (7,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-7000-count">0 ခုံ</span><span id="tier-7000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" style="border-left: 4px solid #CCC0D9;">
+                        <div class="tier-box-title" style="color: #CCC0D9;"><span>I to Q တန်း (8,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-8000-count">0 ခုံ</span><span id="tier-8000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" style="border-left: 4px solid #B97034;">
+                        <div class="tier-box-title" style="color: #B97034;"><span>R to S တန်း (20,000)</span></div>
+                        <div class="tier-box-details"><span id="tier-20000-count">0 ခုံ</span><span id="tier-20000-price">0 Ks</span></div>
+                    </div>
+
+                    <div class="grand-total-box">
+                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -401,7 +474,6 @@
             calculateSummary();
         }
 
-        // ဈေးတန်းအလိုက် (Price Tier) ရောင်းရသည့် ခုံများနှင့် စုစုပေါင်းငွေကို တွက်ချက်ခြင်း
         function calculateSummary() {
             let screenSeats = getActiveScreenSeats();
             
@@ -409,8 +481,7 @@
             let tierPrices = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
 
             for (let seatId in screenSeats) {
-                // အကယ်၍ အဆိုပါခုံကို ရွေးချယ်ထား/ရောင်းပြီးသား ဖြစ်ပါက (အရောင်ရှိနေလျှင်)
-                let parts = seatId.split('-'); // seat-A-1 -> ['seat', 'A', '1']
+                let parts = seatId.split('-');
                 let rowLabel = parts[1];
                 let rowObj = seatStructure.find(r => r.label === rowLabel);
                 
