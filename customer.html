@@ -12,18 +12,22 @@
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        /* Admin ပန်နယ်လို ပုံစံတူ ၁၂ ခုစာ Screen Tabs များ */
-        .screens-nav {
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; 
+        /* Admin ပန်နယ်ပုံစံတူ ၁၂ ခုစာ Screen Tabs များ (အလျားလိုက် ဆွဲလို့ရသည်) */
+        .screens-nav-container {
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
             border: 1px solid #333; width: 100%;
-            scroll-behavior: smooth;
+        }
+        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px; text-align: center; }
+        
+        .screens-nav {
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; 
+            padding-bottom: 5px; scroll-behavior: smooth; width: 100%;
         }
         .screens-nav::-webkit-scrollbar { height: 6px; }
         .screens-nav::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
         .screen-tab {
-            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 6px 12px;
+            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 12px;
             border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;
             display: inline-block; transition: all 0.2s ease; text-align: center; flex-shrink: 0;
         }
@@ -70,12 +74,22 @@
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+
+        /* အောက်ဆုံး သတိပေးချက် Box */
+        .notice-box {
+            margin-top: 20px; background: #1a1a1a; border: 1px dashed #ffeb3b; 
+            padding: 12px 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: #ddd;
+        }
+        .notice-box b { color: #ffeb3b; }
     </style>
 </head>
 <body>
 
-    <!-- Admin ပန်နယ်ပုံစံ ၁၂ ခုစာ Screen Tabs များ -->
-    <div class="screens-nav" id="screensNav"></div>
+    <!-- Admin ပန်နယ်ပုံစံ မျက်နှာဇယား ၁၂ ခုစာ Tabs များ -->
+    <div class="screens-nav-container">
+        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားများကို ဘေးသို့ရွှေ့၍ ရွေးချယ်ပါ</div>
+        <div class="screens-nav" id="screensNav"></div>
+    </div>
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
@@ -101,6 +115,11 @@
         <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
         <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
         <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
+    </div>
+
+    <!-- အောက်ဆုံး သတိပြုရန် အသိပေးချက် -->
+    <div class="notice-box">
+        <b>သတိပြုရန် -</b> ကိုယ်ကြည့်မဲ့ ဇာတ်ကားအမည်/ရက်စွဲ/အချိန် ကို သေချာကြည့်ပြီးမှ bookingတင်ပါ။ Customer View သက်သက်သာဖြစ်တဲ့အတွက် ခုံကိုယ်တိုင်နှိတ်ပြီး ဖြတ်လို့ရမာမဟုတ်ပါဘူး။ ကိုယ်လိုချင်တဲ့ ခုံကို ကိုယ်ကြည့်ချင်တဲ့ အတန်းရဲ့ ဘေးက English အက္ခရာပါ ထည့်ပြောပေးပါ(ဥပမာ-A5,A6,Q1,Q2) လို့ Viber မှာပြန်ပြောပေးပါ
     </div>
 
     <script>
