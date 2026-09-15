@@ -12,23 +12,20 @@
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        /* ၁၂ ပွဲ Tab များအတွက် သေသပ်သော CSS Styling */
-        .screens-nav-container {
+        /* Admin ပန်နယ်လို ပုံစံတူ ၁၂ ခုစာ Screen Tabs များ */
+        .screens-nav {
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; 
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
             border: 1px solid #333; width: 100%;
-        }
-        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px; text-align: center; }
-        .screens-nav {
-            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;
             scroll-behavior: smooth;
         }
         .screens-nav::-webkit-scrollbar { height: 6px; }
         .screens-nav::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
         .screen-tab {
-            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 14px;
-            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
-            display: inline-block; transition: all 0.2s ease; text-align: center;
+            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 6px 12px;
+            border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;
+            display: inline-block; transition: all 0.2s ease; text-align: center; flex-shrink: 0;
         }
         .screen-tab:hover { background: #444; color: #fff; }
         .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 8px rgba(255,235,59,0.4); }
@@ -77,11 +74,8 @@
 </head>
 <body>
 
-    <!-- ၃ ရက်စာ၊ တစ်ရက် ၄ ပွဲ စုစုပေါင်း ပွဲချိန် ၁၂ မျက်နှာဇယား Tab များ -->
-    <div class="screens-nav-container">
-        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန်ကို ရွေးချယ်ပါ</div>
-        <div class="screens-nav" id="screensNav"></div>
-    </div>
+    <!-- Admin ပန်နယ်ပုံစံ ၁၂ ခုစာ Screen Tabs များ -->
+    <div class="screens-nav" id="screensNav"></div>
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
@@ -176,7 +170,6 @@
             
             const dates = globalData.settings?.dates || ["", "", ""];
             const times = globalData.settings?.times || ["", "", "", ""];
-            const movies = globalData.settings?.movies || {};
 
             let count = 1;
             for (let d = 0; d < 3; d++) {
@@ -184,13 +177,11 @@
                 for (let t = 0; t < 4; t++) {
                     let timeStr = times[t] ? times[t] : `Show ${t+1}`;
                     let sId = `screen_${count}`;
-                    let movieName = movies[sId] ? movies[sId] : 'ဇာတ်ကားမရှိ';
                     
                     const btn = document.createElement('button');
                     btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerHTML = `<b>[ပွဲ ${count}]</b> ${dateStr} | ${timeStr}<br><span style="color:#ffeb3b; font-size:11px;">${movieName}</span>`;
+                    btn.innerText = `(S${count}) ${dateStr} (${timeStr})`;
                     
-                    // Closure problem ကာကွယ်ရန် let သုံးထားသည်
                     let capturedId = sId;
                     btn.onclick = () => {
                         currentScreenId = capturedId;
