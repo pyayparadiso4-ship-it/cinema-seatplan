@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paradiso Pyay Cinema - Customer View</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
+        body { background: #121212; color: #fff; padding: 15px; margin: 0; }
+
+        .screens-nav {
+            background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 15px;
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+        }
+        .screen-tab {
+            background: #333; color: #bbb; border: 1px solid #444; padding: 6px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
+            transition: all 0.2s;
+        }
+        .screen-tab:hover { background: #444; color: #fff; }
+        .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
+
+        .seat-map-outer {
+            width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
+
+        .movie-display-header {
+            text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
+            border-radius: 6px; margin-bottom: 15px;
+        }
+        .movie-title-text { font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 2px; }
+        .movie-info-sub { font-size: 12px; color: #aaa; }
+
+        .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
+        
+        .seat-map-main-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .seat-rows-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tier-summary-sidebar {
+            width: 200px;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 15px;
+        }
+
+        .tier-box {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tier-box-title { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+        .tier-box-details { color: #ccc; display: flex; justify-content: space-between; font-size: 11px; }
+
+        #box-4000 { height: 37px; margin-bottom: 5px; border-left: 4px solid #777670; }
+        #box-5000 { height: 121px; margin-bottom: 5px; border-left: 4px solid #9BBB59; }
+        #box-6000 { height: 79px; margin-bottom: 5px; border-left: 4px solid #FABF8F; }
+        #box-7000 { height: 79px; margin-bottom: 19px; border-left: 4px solid #4BACC6; }
+        #box-8000 { height: 357px; margin-bottom: 19px; border-left: 4px solid #CCC0D9; }
+        #box-20000 { height: 79px; margin-bottom: 10px; border-left: 4px solid #B97034; }
+
+        .grand-total-box {
+            background: #1c2e1c;
+            border: 1px solid #2e7d32;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
+        .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
+        
+        .seat {
+            width: 25px; height: 30px; min-width: 25px; border-radius: 3px; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center;
+            user-select: none; color: #000; font-weight: bold; cursor: default;
+        }
+        .empty { width: 25px; min-width: 25px; height: 30px; }
+        
+        .price-4000 { background-color: #777670; color: #fff; }
+        .price-5000 { background-color: #9BBB59; }
+        .price-6000 { background-color: #FABF8F; }
+        .price-7000 { background-color: #4BACC6; }
+        .price-8000 { background-color: #CCC0D9; }
+        .price-20000 { background-color: #B97034; color: #fff; }
+
+        .admin-red { background-color: #ff3333 !important; color: white !important; }
+        .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
+        .admin-purple { background-color: #9933ee !important; color: white !important; }
+
+        .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- ပွဲချိန်ရွေးချယ်ရန် Tabs များနှင့် Header -->
+    <div class="screens-nav" id="screensNav"></div>
+
+    <div class="seat-map-outer">
+        <div class="seat-map-inner">
+            <div class="movie-display-header">
+                <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
+                <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+            </div>
+
+            <div class="screen">SCREEN</div>
+            
+            <div class="seat-map-main-layout">
+                <div class="seat-rows-area" id="seatContainer"></div>
+                
+                <div class="tier-summary-sidebar">
+                    <div class="tier-box" id="box-4000">
+                        <div class="tier-box-title" style="color: #bbb;">A တန်း (4,000)</div>
+                        <div class="tier-box-details"><span id="tier-4000-count">0 ခုံ</span><span id="tier-4000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" id="box-5000">
+                        <div class="tier-box-title" style="color: #9BBB59;">B to D တန်း (5,000)</div>
+                        <div class="tier-box-details"><span id="tier-5000-count">0 ခုံ</span><span id="tier-5000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" id="box-6000">
+                        <div class="tier-box-title" style="color: #FABF8F;">E to F တန်း (6,000)</div>
+                        <div class="tier-box-details"><span id="tier-6000-count">0 ခုံ</span><span id="tier-6000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" id="box-7000">
+                        <div class="tier-box-title" style="color: #4BACC6;">G to H တန်း (7,000)</div>
+                        <div class="tier-box-details"><span id="tier-7000-count">0 ခုံ</span><span id="tier-7000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" id="box-8000">
+                        <div class="tier-box-title" style="color: #CCC0D9;">I to Q တန်း (8,000)</div>
+                        <div class="tier-box-details"><span id="tier-8000-count">0 ခုံ</span><span id="tier-8000-price">0 Ks</span></div>
+                    </div>
+                    <div class="tier-box" id="box-20000">
+                        <div class="tier-box-title" style="color: #B97034;">R to S တန်း (20,000)</div>
+                        <div class="tier-box-details"><span id="tier-20000-count">0 ခုံ</span><span id="tier-20000-price">0 Ks</span></div>
+                    </div>
+
+                    <div class="grand-total-box" style="margin-top: 5px;">
+                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">ရောင်းပြီးခုံ စုစုပေါင်းတန်ဖိုး</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- အောက်ဆုံး Legend အရောင်အညွှန်း -->
+    <div class="legend">
+        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> အနီ - ရောင်းပြီး</div>
+        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
+        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
+        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
+        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
+        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
+        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZSob8_C6Bspj8mLiOXtkFqvPg5PDTj_4",
+            authDomain: "paradisopyayseatplan.firebaseapp.com",
+            databaseURL: "https://paradisopyayseatplancinema-default-rtdb.firebaseio.com",
+            projectId: "paradisopyayseatplan",
+            storageBucket: "paradisopyayseatplan.firebasestorage.app",
+            messagingSenderId: "985120964759",
+            appId: "1:985120964759:web:3a90ed2a477b5cecfce9d2",
+            measurementId: "G-2Z9RVC7QWF"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const seatStructure = [
+            { label: 'A', price: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'B', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'C', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'D', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'E', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'F', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { type: 'gap' },
+            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { type: 'gap' },
+            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+        ];
+
+        let globalData = {
+            settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+            screens: {}
+        };
+        let currentScreenId = 'screen_1';
+
+        function initFirebaseSync() {
+            database.ref('paradiso_cinema').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    globalData = data;
+                } else {
+                    globalData = {
+                        settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+                        screens: {}
+                    };
+                }
+                buildScreensNav();
+                updateUI();
+            });
+        }
+
+        function buildScreensNav() {
+            const nav = document.getElementById('screensNav');
+            nav.innerHTML = '';
+            
+            const dates = globalData.settings?.dates || [];
+            const times = globalData.settings?.times || [];
+            const movies = globalData.settings?.movies || {};
+
+            let count = 1;
+            for (let d = 0; d < 3; d++) {
+                let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                for (let t = 0; t < 4; t++) {
+                    let timeStr = times[t] ? times[t] : `Show ${t+1}`;
+                    let sId = `screen_${count}`;
+                    let movieShort = movies[sId] ? ` - ${movies[sId]}` : '';
+                    
+                    const btn = document.createElement('button');
+                    btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
+                    btn.innerText = `[S${count}] ${dateStr} (${timeStr})${movieShort}`;
+                    btn.onclick = () => {
+                        currentScreenId = sId;
+                        buildScreensNav();
+                        updateUI();
+                    };
+                    nav.appendChild(btn);
+                    count++;
+                }
+            }
+        }
+
+        function getActiveScreenSeats() {
+            if (!globalData.screens) globalData.screens = {};
+            if (!globalData.screens[currentScreenId]) globalData.screens[currentScreenId] = {};
+            return globalData.screens[currentScreenId];
+        }
+
+        function updateUI() {
+            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
+            let dIndex = Math.floor(screenIndex / 4);
+            let tIndex = screenIndex % 4;
+            
+            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် မရှိသေးပါ';
+
+            document.getElementById('displayMovieTitle').innerText = movieName;
+            document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
+
+            let screenSeats = getActiveScreenSeats();
+
+            document.querySelectorAll('.seat').forEach(seat => {
+                seat.classList.remove('admin-red', 'admin-yellow', 'admin-purple');
+                const seatId = seat.id;
+                if (screenSeats[seatId]) {
+                    seat.classList.add('admin-' + screenSeats[seatId]);
+                }
+            });
+            calculateSummary();
+        }
+
+        function calculateSummary() {
+            let screenSeats = getActiveScreenSeats();
+            
+            let tierCounts = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
+            let tierPrices = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
+            let grandTotal = 0;
+
+            for (let seatId in screenSeats) {
+                let parts = seatId.split('-');
+                let rowLabel = parts[1];
+                let rowObj = seatStructure.find(r => r.label === rowLabel);
+                
+                if (rowObj) {
+                    let p = rowObj.price;
+                    tierCounts[p]++;
+                    tierPrices[p] += p;
+                }
+            }
+
+            [4000, 5000, 6000, 7000, 8000, 20000].forEach(price => {
+                document.getElementById(`tier-${price}-count`).innerText = tierCounts[price] + ' ခုံ';
+                document.getElementById(`tier-${price}-price`).innerText = tierPrices[price].toLocaleString() + ' Ks';
+                grandTotal += tierPrices[price];
+            });
+
+            document.getElementById('grand-total-price').innerText = grandTotal.toLocaleString();
+        }
+
+        const container = document.getElementById('seatContainer');
+        container.innerHTML = '';
+
+        seatStructure.forEach(row => {
+            if (row.type === 'gap') {
+                const gapDiv = document.createElement('div');
+                gapDiv.style.height = '14px';
+                container.appendChild(gapDiv);
+                return;
+            }
+
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'seat-row';
+
+            row.seats.forEach(num => {
+                if (num === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'empty';
+                    rowDiv.appendChild(emptyDiv);
+                } else {
+                    const seatBtn = document.createElement('div');
+                    const seatId = 'seat-' + row.label + '-' + num;
+                    seatBtn.id = seatId;
+                    seatBtn.className = `seat ${row.class}`;
+                    seatBtn.innerText = num;
+                    // Customer ဘက်မှ ကလစ်၍မရအောင် လုပ်ထားခြင်း (View-Only)
+                    rowDiv.appendChild(seatBtn);
+                }
+            });
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'row-label';
+            labelDiv.innerText = row.label;
+            rowDiv.appendChild(labelDiv);
+
+            container.appendChild(rowDiv);
+        });
+
+        initFirebaseSync();
+    </script>
+</body>
+</html>
