@@ -41,53 +41,12 @@
         
         .seat-map-main-layout {
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-
-        .seat-rows-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tier-summary-sidebar {
-            width: 200px;
-            min-width: 200px;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 15px;
-        }
-
-        .tier-box {
-            background: #252525;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 8px 10px;
-            text-align: left;
-            font-size: 11px;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
         }
 
-        .tier-box-title { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
-        .tier-box-details { color: #ccc; display: flex; justify-content: space-between; font-size: 11px; }
-
-        #box-4000 { height: 37px; margin-bottom: 5px; border-left: 4px solid #777670; }
-        #box-5000 { height: 121px; margin-bottom: 5px; border-left: 4px solid #9BBB59; }
-        #box-6000 { height: 79px; margin-bottom: 5px; border-left: 4px solid #FABF8F; }
-        #box-7000 { height: 79px; margin-bottom: 19px; border-left: 4px solid #4BACC6; }
-        #box-8000 { height: 357px; margin-bottom: 19px; border-left: 4px solid #CCC0D9; }
-        #box-20000 { height: 79px; margin-bottom: 10px; border-left: 4px solid #B97034; }
-
-        .grand-total-box {
-            background: #1c2e1c;
-            border: 1px solid #2e7d32;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
+        .seat-rows-area {
+            display: flex;
+            flex-direction: column;
         }
 
         .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
@@ -108,8 +67,6 @@
         .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
-        .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
-        .admin-purple { background-color: #9933ee !important; color: white !important; }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
@@ -118,7 +75,7 @@
 </head>
 <body>
 
-    <!-- ပွဲချိန်ရွေးချယ်ရန် Tabs များနှင့် Header -->
+    <!-- ၃ ရက်စာ ပွဲချိန် ၁၂ မျက်နှာဇယား Tabs များ -->
     <div class="screens-nav" id="screensNav"></div>
 
     <div class="seat-map-outer">
@@ -132,38 +89,6 @@
             
             <div class="seat-map-main-layout">
                 <div class="seat-rows-area" id="seatContainer"></div>
-                
-                <div class="tier-summary-sidebar">
-                    <div class="tier-box" id="box-4000">
-                        <div class="tier-box-title" style="color: #bbb;">A တန်း (4,000)</div>
-                        <div class="tier-box-details"><span id="tier-4000-count">0 ခုံ</span><span id="tier-4000-price">0 Ks</span></div>
-                    </div>
-                    <div class="tier-box" id="box-5000">
-                        <div class="tier-box-title" style="color: #9BBB59;">B to D တန်း (5,000)</div>
-                        <div class="tier-box-details"><span id="tier-5000-count">0 ခုံ</span><span id="tier-5000-price">0 Ks</span></div>
-                    </div>
-                    <div class="tier-box" id="box-6000">
-                        <div class="tier-box-title" style="color: #FABF8F;">E to F တန်း (6,000)</div>
-                        <div class="tier-box-details"><span id="tier-6000-count">0 ခုံ</span><span id="tier-6000-price">0 Ks</span></div>
-                    </div>
-                    <div class="tier-box" id="box-7000">
-                        <div class="tier-box-title" style="color: #4BACC6;">G to H တန်း (7,000)</div>
-                        <div class="tier-box-details"><span id="tier-7000-count">0 ခုံ</span><span id="tier-7000-price">0 Ks</span></div>
-                    </div>
-                    <div class="tier-box" id="box-8000">
-                        <div class="tier-box-title" style="color: #CCC0D9;">I to Q တန်း (8,000)</div>
-                        <div class="tier-box-details"><span id="tier-8000-count">0 ခုံ</span><span id="tier-8000-price">0 Ks</span></div>
-                    </div>
-                    <div class="tier-box" id="box-20000">
-                        <div class="tier-box-title" style="color: #B97034;">R to S တန်း (20,000)</div>
-                        <div class="tier-box-details"><span id="tier-20000-count">0 ခုံ</span><span id="tier-20000-price">0 Ks</span></div>
-                    </div>
-
-                    <div class="grand-total-box" style="margin-top: 5px;">
-                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">ရောင်းပြီးခုံ စုစုပေါင်းတန်ဖိုး</div>
-                        <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -291,41 +216,12 @@
             let screenSeats = getActiveScreenSeats();
 
             document.querySelectorAll('.seat').forEach(seat => {
-                seat.classList.remove('admin-red', 'admin-yellow', 'admin-purple');
+                seat.classList.remove('admin-red');
                 const seatId = seat.id;
-                if (screenSeats[seatId]) {
-                    seat.classList.add('admin-' + screenSeats[seatId]);
+                if (screenSeats[seatId] === 'red') {
+                    seat.classList.add('admin-red');
                 }
             });
-            calculateSummary();
-        }
-
-        function calculateSummary() {
-            let screenSeats = getActiveScreenSeats();
-            
-            let tierCounts = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
-            let tierPrices = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
-            let grandTotal = 0;
-
-            for (let seatId in screenSeats) {
-                let parts = seatId.split('-');
-                let rowLabel = parts[1];
-                let rowObj = seatStructure.find(r => r.label === rowLabel);
-                
-                if (rowObj) {
-                    let p = rowObj.price;
-                    tierCounts[p]++;
-                    tierPrices[p] += p;
-                }
-            }
-
-            [4000, 5000, 6000, 7000, 8000, 20000].forEach(price => {
-                document.getElementById(`tier-${price}-count`).innerText = tierCounts[price] + ' ခုံ';
-                document.getElementById(`tier-${price}-price`).innerText = tierPrices[price].toLocaleString() + ' Ks';
-                grandTotal += tierPrices[price];
-            });
-
-            document.getElementById('grand-total-price').innerText = grandTotal.toLocaleString();
         }
 
         const container = document.getElementById('seatContainer');
@@ -342,6 +238,7 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
+            row.seats.events = [];
             row.seats.forEach(num => {
                 if (num === 0) {
                     const emptyDiv = document.createElement('div');
@@ -353,7 +250,6 @@
                     seatBtn.id = seatId;
                     seatBtn.className = `seat ${row.class}`;
                     seatBtn.innerText = num;
-                    // Customer ဘက်မှ ကလစ်၍မရအောင် လုပ်ထားခြင်း (View-Only)
                     rowDiv.appendChild(seatBtn);
                 }
             });
