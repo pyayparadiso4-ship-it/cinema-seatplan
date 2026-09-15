@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paradiso Pyay Cinema - Customer View</title>
+    <title>Paradiso Pyay Cinema - Customer Booking</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -12,7 +12,6 @@
         * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
         body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        /* ရက်စွဲနှင့် ပွဲချိန်များကို 2x2 Grid ပုံစံဖြင့်ပြသရန် */
         .screens-nav-container {
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
             border: 1px solid #333; width: 100%;
@@ -68,8 +67,10 @@
         .seat {
             width: 25px; height: 30px; min-width: 25px; border-radius: 3px; font-size: 11px;
             display: inline-flex; align-items: center; justify-content: center;
-            user-select: none; color: #000; font-weight: bold; cursor: default;
+            user-select: none; color: #000; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s;
         }
+        .seat:hover { transform: scale(1.1); }
         .empty { width: 25px; min-width: 25px; height: 30px; }
         
         .price-4000 { background-color: #777670; color: #fff; }
@@ -79,32 +80,43 @@
         .price-8000 { background-color: #CCC0D9; }
         .price-20000 { background-color: #B97034; color: #fff; }
 
-        .admin-red { background-color: #ff3333 !important; color: white !important; }
+        /* Admin ရောင်းပြီးသားခုံ (အနီရောင်) - နှိပ်လို့မရပါ */
+        .admin-red { background-color: #ff3333 !important; color: white !important; cursor: not-allowed !important; pointer-events: none; }
+
+        /* Customer ကိုယ်တိုင်ရွေးထားသောခုံ (အစိမ်းရောင်တောက်တောက်) */
+        .customer-selected { background-color: #00ff66 !important; color: #000 !important; box-shadow: 0 0 8px #00ff66; }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
 
-        /* အောက်ဆုံး သတိပေးချက် Box */
+        /* Booking Control Panel (အောက်ဆုံးတွင်ပေါ်မည့် Summary နှင့် Button) */
+        .booking-panel {
+            margin-top: 20px; background: #1a1a1a; border: 2px solid #ffeb3b;
+            padding: 15px; border-radius: 8px; text-align: center;
+        }
+        .selected-info { font-size: 14px; margin-bottom: 10px; color: #fff; }
+        .selected-info b { color: #00ff66; }
+        
+        .viber-btn {
+            background-color: #7360f2; color: white; border: none; padding: 12px 25px;
+            font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(115, 96, 242, 0.4); transition: background 0.2s;
+        }
+        .viber-btn:hover { background-color: #5c47e0; }
+        .viber-btn:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+
         .notice-box {
-            margin-top: 20px; background: #1a1a1a; border: 1px dashed #ffeb3b; 
+            margin-top: 15px; background: #1a1a1a; border: 1px dashed #ffeb3b; 
             padding: 12px 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: #ddd;
         }
         .notice-box b { color: #ffeb3b; }
-
-        /* အထူးသတိပေးချက် စာသားအကြီး */
-        .vpn-warning {
-            margin-top: 15px; background: #2c1212; border: 2px solid #ff3333;
-            padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold;
-            text-align: center; color: #ff6b6b; line-height: 1.5;
-        }
     </style>
 </head>
 <body>
 
-    <!-- ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားများ (Grid ပုံစံ) -->
     <div class="screens-nav-container">
-        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားသို့ပြောင်းကြည့်ပြီးမှ booking တင်ပါ</div>
+        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားကို ရွေးချယ်ပါ</div>
         <div class="screens-nav" id="screensNav"></div>
     </div>
 
@@ -123,9 +135,15 @@
         </div>
     </div>
 
-    <!-- အောက်ဆုံး Legend အရောင်အညွှန်း -->
+    <!-- Customer ရွေးချယ်ထားမှုကို ပြသပြီး Viber သို့ ပို့မည့် Panel -->
+    <div class="booking-panel">
+        <div class="selected-info" id="selectedInfoText">ရွေးချယ်ထားသော ခုံများ: <b id="selectedSeatsListText">မရှိသေးပါ</b></div>
+        <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
+    </div>
+
     <div class="legend">
-        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> အနီ - ရောင်းပြီး</div>
+        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
+        <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
         <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
         <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
         <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
@@ -134,14 +152,8 @@
         <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
     </div>
 
-    <!-- အောက်ဆုံး သတိပြုရန် အသိပေးချက် -->
     <div class="notice-box">
-        <b>သတိပြုရန် -</b> ကိုယ်ကြည့်မဲ့ ဇာတ်ကားအမည်/ရက်စွဲ/အချိန် ကို သေချာကြည့်ပြီးမှ bookingတင်ပါ။ Customer View သက်သက်သာဖြစ်တဲ့အတွက် ခုံကိုယ်တိုင်နှိတ်ပြီး ဖြတ်လို့ရမာမဟုတ်ပါဘူး။ ကိုယ်လိုချင်တဲ့ ခုံကို ကိုယ်ကြည့်ချင်တဲ့ အတန်းရဲ့ ဘေးက English အက္ခရာပါ ထည့်ပြောပေးပါ(ဥပမာ-A5,A6,Q1,Q2) လို့ Viber မှာပြန်ပြောပေးပါ
-    </div>
-
-    <!-- ထည့်ပေးလိုက်သည့် VPN သတိပေးချက် စာလုံးအကြီး -->
-    <div class="vpn-warning">
-        VPN ခံကြည့်မှသာ ရောင်းထားသောခုံများပေါ်မည်ဖြစ်၍ ခုံရွေးလို့ရပါမည်။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ ရွေးပြီးပါက အောက်နားရှိ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ခလုတ်ကို နှိပ်၍ ငွေချေရန် ဆက်သွယ်နိုင်ပါသည်။
     </div>
 
     <script>
@@ -188,6 +200,7 @@
             screens: {}
         };
         let currentScreenId = 'screen_1';
+        let selectedSeats = []; // Customer ရွေးထားသော ခုံများ သိမ်းရန်
 
         function initFirebaseSync() {
             database.ref('paradiso_cinema').on('value', (snapshot) => {
@@ -240,6 +253,7 @@
                     let capturedId = sId;
                     btn.onclick = () => {
                         currentScreenId = capturedId;
+                        selectedSeats = []; // Screen ပြောင်းလျှင် ရွေးထားသည်များ ရှင်းထုတ်မည်
                         buildScreensNav();
                         updateUI();
                     };
@@ -272,14 +286,69 @@
             let screenSeats = getActiveScreenSeats();
 
             document.querySelectorAll('.seat').forEach(seat => {
-                seat.classList.remove('admin-red');
                 const seatId = seat.id;
+                seat.classList.remove('admin-red', 'customer-selected');
                 
-                // Admin ဘက်က ဘယ်အရောင်ပဲနှိပ်နှိပ် (သို့) Data ရှိနေရင် Customer ဘက်မှာ အနီရောင်ပြောင်းမည်
+                // Admin ဘက်က ရောင်းပြီးသား (အနီရောင်)
                 if (screenSeats[seatId]) {
                     seat.classList.add('admin-red');
+                } 
+                // Customer ကိုယ်တိုင်ရွေးထားပြီးသား
+                else if (selectedSeats.includes(seatId)) {
+                    seat.classList.add('customer-selected');
                 }
             });
+
+            updateSelectedSeatsDisplay();
+        }
+
+        function handleSeatClick(seatId) {
+            let screenSeats = getActiveScreenSeats();
+            // Admin ရောင်းပြီးသားဆိုလျှင် မရွေးနိုင်ပါ
+            if (screenSeats[seatId]) return;
+
+            const index = selectedSeats.indexOf(seatId);
+            if (index > -1) {
+                selectedSeats.splice(index, 1); // ပြန်နှိပ်လျှင် ဖယ်မည်
+            } else {
+                selectedSeats.push(seatId); // အသစ်ထည့်မည်
+            }
+            updateUI();
+        }
+
+        function updateSelectedSeatsDisplay() {
+            const listText = document.getElementById('selectedSeatsListText');
+            const btn = document.getElementById('viberConfirmBtn');
+
+            if (selectedSeats.length > 0) {
+                // readable seat names (eg: seat-A-5 -> A5)
+                let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', ''));
+                listText.innerText = formattedSeats.join(', ');
+                btn.disabled = false;
+            } else {
+                listText.innerText = "မရှိသေးပါ";
+                btn.disabled = true;
+            }
+        }
+
+        function sendToViber() {
+            if (selectedSeats.length === 0) return;
+
+            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
+            let dIndex = Math.floor(screenIndex / 4);
+            let tIndex = screenIndex % 4;
+            
+            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကား';
+
+            let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', '')).join(', ');
+
+            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
+
+            // သင့်ရဲ့ Viber ဖုန်းနံပါတ် (+959457143360) သို့ Deep Link ဖြင့် ပို့ဆောင်ခြင်း
+            let viberUrl = `viber://forward?text=${encodeURIComponent(message)}`;
+            window.location.href = viberUrl;
         }
 
         const container = document.getElementById('seatContainer');
@@ -307,6 +376,8 @@
                     seatBtn.id = seatId;
                     seatBtn.className = `seat ${row.class}`;
                     seatBtn.innerText = num;
+                    
+                    seatBtn.onclick = () => handleSeatClick(seatId);
                     rowDiv.appendChild(seatBtn);
                 }
             });
