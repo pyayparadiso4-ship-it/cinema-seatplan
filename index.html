@@ -211,12 +211,12 @@
             
             const dates = globalData.settings?.dates || ["", "", ""];
             const times = globalData.settings?.times || ["", "", "", ""];
+            const movies = globalData.settings?.movies || {};
 
             let count = 1;
             for (let d = 0; d < 3; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
                 
-                // ရက်စွဲတစ်ခုချင်းစီအတွက် Container ဆောက်သည်
                 const dateGroup = document.createElement('div');
                 dateGroup.className = 'date-group';
 
@@ -231,10 +231,11 @@
                 for (let t = 0; t < 4; t++) {
                     let timeStr = times[t] ? times[t] : `Show ${t+1}`;
                     let sId = `screen_${count}`;
+                    let movieShort = movies[sId] ? ` (${movies[sId]})` : '';
                     
                     const btn = document.createElement('button');
                     btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerText = timeStr;
+                    btn.innerText = `${timeStr}${movieShort}`;
                     
                     let capturedId = sId;
                     btn.onclick = () => {
@@ -273,13 +274,14 @@
             document.querySelectorAll('.seat').forEach(seat => {
                 seat.classList.remove('admin-red');
                 const seatId = seat.id;
-                if (screenSeats[seatId] === 'red') {
+                
+                // Admin ဘက်က ဘယ်အရောင်ပဲနှိပ်နှိပ် (သို့) Data ရှိနေရင် Customer ဘက်မှာ အနီရောင်ပြောင်းမည်
+                if (screenSeats[seatId]) {
                     seat.classList.add('admin-red');
                 }
             });
         }
 
-        // Render Seat Map Structure once
         const container = document.getElementById('seatContainer');
         container.innerHTML = '';
 
