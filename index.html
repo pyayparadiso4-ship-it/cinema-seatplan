@@ -92,7 +92,7 @@
         }
         .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
         
-        /* အပေါ်ဆုံး Summary Bar (ခုံအရေအတွက် နှင့် ငွေပမာဏများပါ ထည့်သွင်းထားသည်) */
+        /* ပုံပါအတိုင်း အရောင်အောက်တွင် Amount (Ks) ပါဝင်မည့် အပေါ်ဆုံး Summary Bar */
         .top-summary-bar {
             display: flex;
             justify-content: space-between;
@@ -245,26 +245,25 @@
 
     <div class="seat-map-outer">
         <div class="seat-map-inner">
-            <!-- အပေါ်ဆုံး Summary Bar (အနီ၊ အဝါ၊ ခရမ်း တစ်ခုချင်းစီအောက်တွင် ခုံအရေအတွက်နှင့် Amount ပါ ထည့်ထားသည်) -->
+            <!-- အရောင်တစ်မျိုးချင်းစီအောက်တွင် ခုံအရေအတွက်နှင့် Amount ပါဝင်သော အပေါ်ဆုံး Summary Bar -->
             <div class="top-summary-bar">
                 <div class="top-summary-item" style="color: #ff3333;">
                     <span>အနီ (ရောင်းပြီး)</span>
                     <span><span id="top-red-count">0</span> ခုံ</span>
-                    <span><span id="top-red-amount">0</span> Ks</span>
+                    <span style="font-size: 11px; color: #ff9999;">(<span id="top-red-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #ffcc00;">
                     <span>အဝါ</span>
                     <span><span id="top-yellow-count">0</span> ခုံ</span>
-                    <span><span id="top-yellow-amount">0</span> Ks</span>
+                    <span style="font-size: 11px; color: #ffee55;">(<span id="top-yellow-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #9933ee;">
                     <span>ခရမ်း</span>
                     <span><span id="top-purple-count">0</span> ခုံ</span>
-                    <span><span id="top-purple-amount">0</span> Ks</span>
+                    <span style="font-size: 11px; color: #cc88ff;">(<span id="top-purple-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #ffeb3b;">
                     <span>စုစုပေါင်းဝင်ငွေ</span>
-                    <span style="visibility: hidden;">-</span>
                     <span><span id="top-grand-total">0</span> Ks</span>
                 </div>
             </div>
@@ -523,7 +522,7 @@
 
             for (let seatId in screenSeats) {
                 let color = screenSeats[seatId];
-                
+
                 let parts = seatId.split('-');
                 let rowLabel = parts[1];
                 let rowObj = seatStructure.find(r => r.label === rowLabel);
