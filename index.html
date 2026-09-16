@@ -126,6 +126,7 @@
         .viber-btn:hover { background-color: #5c47e0; }
         .viber-btn:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
 
+        /* Big VPN Warning Box at the Bottom */
         .big-vpn-box {
             margin-top: 20px; background: #2a1515; border: 2px solid #ff3333;
             padding: 15px; border-radius: 8px; text-align: center;
@@ -143,6 +144,7 @@
 </head>
 <body>
 
+    <!-- VPN Warning Modal -->
     <div id="vpnModal">
         <div class="modal-content">
             <div class="modal-title">⚠️ အရေးကြီး သတိပေးချက်</div>
@@ -179,6 +181,7 @@
         <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
     </div>
 
+    <!-- Bottom Big VPN Warning Box -->
     <div class="big-vpn-box">
         <h3>🚨 အထူးသတိပေးချက် 🚨</h3>
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
@@ -376,131 +379,9 @@
             updateSelectedSeatsDisplay();
         }
 
-        function getRowSubBlocks(rowObj) {
-            let blocks = [];
-            let currentBlock = [];
-            
-            rowObj.seats.forEach(num => {
-                if (num === 0) {
-                    if (currentBlock.length > 0) {
-                        blocks.push(currentBlock);
-                        currentBlock = [];
-                    }
-                } else {
-                    currentBlock.push(num);
-                }
-            });
-            if (currentBlock.length > 0) {
-                blocks.push(currentBlock);
-            }
-            return blocks;
-        }
-
-        function checkIsolatedGapWarning(rowLabel, seatNum, screenSeats) {
-            let rowObj = seatStructure.find(r => r.label === rowLabel);
-            if (!rowObj) return false;
-
-            if (rowLabel === 'R' || rowLabel === 'S') return false;
-
-            let tempSelected = [...selectedSeats];
-            let idx = tempSelected.indexOf(`seat-${rowLabel}-${seatNum}`);
-            if (idx > -1) {
-                tempSelected.splice(idx, 1);
-            } else {
-                tempSelected.push(`seat-${rowLabel}-${seatNum}`);
-            }
-
-            let blocks = getRowSubBlocks(rowObj);
-
-            for (let block of blocks) {
-                let sortedBlock = [...block].sort((a,b) => a - b);
-                let totalSeatsInBlock = sortedBlock.length;
-
-                if (totalSeatsInBlock === 4) {
-                    let availableInBlock = sortedBlock.filter(num => !screenSeats[`seat-${rowLabel}-${num}`] && !tempSelected.includes(`seat-${rowLabel}-${num}`));
-                    let takenInBlock = sortedBlock.filter(num => screenSeats[`seat-${rowLabel}-${num}`] || tempSelected.includes(`seat-${rowLabel}-${num}`));
-                    
-                    if (takenInBlock.length === 2 && availableInBlock.length === 2) {
-                        let isFirstAvailable = sortedBlock.indexOf(availableInBlock[0]);
-                        let isSecondAvailable = sortedBlock.indexOf(availableInBlock[1]);
-                        if ((isFirstAvailable === 1 && isSecondAvailable === 2)) {
-                            return true;
-                        }
-                    }
-                } 
-                else {
-                    let availableInBlock = sortedBlock.filter(num => !screenSeats[`seat-${rowLabel}-${num}`] && !tempSelected.includes(`seat-${rowLabel}-${num}`));
-                    
-                    if (availableInBlock.length <= 2) {
-                        continue;
-                    }
-
-                    let blockTakenIndices = [];
-                    for (let i = 0; i < sortedBlock.length; i++) {
-                        let sId = `seat-${rowLabel}-${sortedBlock[i]}`;
-                        if (screenSeats[sId] || tempSelected.includes(sId)) {
-                            blockTakenIndices.push(i);
-                        }
-                    }
-
-                    if (blockTakenIndices.length > 0) {
-                        let minTaken = Math.min(...blockTakenIndices);
-                        if (minTaken === 1) {
-                            let edgeSeatId = `seat-${rowLabel}-${sortedBlock[0]}`;
-                            if (!screenSeats[edgeSeatId] && !tempSelected.includes(edgeSeatId)) {
-                                return true;
-                            }
-                        }
-
-                        let maxTaken = Math.max(...blockTakenIndices);
-                        if (maxTaken === sortedBlock.length - 2) {
-                            let edgeSeatId = `seat-${rowLabel}-${sortedBlock[sortedBlock.length - 1]}`;
-                            if (!screenSeats[edgeSeatId] && !tempSelected.includes(edgeSeatId)) {
-                                return true;
-                            }
-                        }
-
-                        for (let i = 0; i < sortedBlock.length; i++) {
-                            let num = sortedBlock[i];
-                            let sId = `seat-${rowLabel}-${num}`;
-                            let isTaken = screenSeats[sId] || tempSelected.includes(sId);
-
-                            if (!isTaken) {
-                                let isLeftBoundary = (i === 0);
-                                let isRightBoundary = (i === sortedBlock.length - 1);
-
-                                if (!isLeftBoundary && !isRightBoundary) {
-                                    let leftTaken = (screenSeats[`seat-${rowLabel}-${sortedBlock[i-1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i-1]}`));
-                                    let rightTaken = (screenSeats[`seat-${rowLabel}-${sortedBlock[i+1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i+1]}`));
-
-                                    if (leftTaken && rightTaken) {
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
         function handleSeatClick(seatId) {
             let screenSeats = getActiveScreenSeats();
             if (screenSeats[seatId]) return;
-
-            let parts = seatId.replace('seat-', '').split('-');
-            let rowLabel = parts[0];
-            let seatNum = parseInt(parts[1]);
-
-            let isSelecting = !selectedSeats.includes(seatId);
-            if (isSelecting) {
-                let willCreateGap = checkIsolatedGapWarning(rowLabel, seatNum, screenSeats);
-                if (willCreateGap) {
-                    alert("လျှောက်လမ်းဘေးတွင် တစ်ခုံတည်း ခြွင်းချန်၍ မရပါ (၂ ခုံခြား၍ သို့မဟုတ် အစမှစ၍ ယူပါ) နှင့် ကြားထဲတွင် ခုံတစ်ခုံတည်း ညပ်ကျန်ခဲ့စေမည့် ပုံစံမျိုး မလုပ်ရပါရှင်။");
-                    return;
-                }
-            }
 
             const index = selectedSeats.indexOf(seatId);
             if (index > -1) {
