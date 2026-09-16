@@ -185,7 +185,7 @@
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
     </div>
 
-    <!-- Updated Legend Layout -->
+    <!-- Corrected Legend Layout matching your exact image request -->
     <div class="legend">
         <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
         <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
@@ -355,7 +355,7 @@
             let tIndex = screenIndex % 4;
             
             let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
-            let timeText = (globalData.settings?.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
             let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် မရှိသေးပါ';
 
             document.getElementById('displayMovieTitle').innerText = movieName;
@@ -377,14 +377,32 @@
             updateSelectedSeatsDisplay();
         }
 
-        // Check for isolated single empty seat validation logic
+        // Helper to break a row into continuous blocks split by aisles or 0 gaps
+        function getRowSubBlocks(rowObj) {
+            let blocks = [];
+            let currentBlock = [];
+            
+            rowObj.seats.forEach(num => {
+                if (num === 0) {
+                    if (currentBlock.length > 0) {
+                        blocks.push(currentBlock);
+                        currentBlock = [];
+                    }
+                } else {
+                    currentBlock.push(num);
+                }
+            });
+            if (currentBlock.length > 0) {
+                blocks.push(currentBlock);
+            }
+            return blocks;
+        }
+
+        // Strict validation for aisle seats and single isolated gaps inside blocks
         function checkIsolatedGapWarning(rowLabel, seatNum, screenSeats) {
             let rowObj = seatStructure.find(r => r.label === rowLabel);
             if (!rowObj) return false;
 
-            // Gather all valid seat numbers in this row excluding gaps
-            let validSeats = rowObj.seats.filter(s => s !== 0).sort((a,b) => a - b);
-            
             // Simulate adding/toggling this seat in selectedSeats + screenSeats
             let tempSelected = [...selectedSeats];
             let idx = tempSelected.indexOf(`seat-${rowLabel}-${seatNum}`);
@@ -394,36 +412,50 @@
                 tempSelected.push(`seat-${rowLabel}-${seatNum}`);
             }
 
-            // Check every seat in this row to see if a single gap is created
-            for (let i = 0; i < validSeats.length; i++) {
-                let currentNum = validSeats[i];
-                let currentId = `seat-${rowLabel}-${currentNum}`;
-                
-                // Is this seat empty (not booked by admin and not selected by customer)?
-                let isBookedOrSelected = screenSeats[currentId] || tempSelected.includes(currentId);
-                
-                if (!isBookedOrSelected) {
-                    // Check left and right neighbors of this empty seat
-                    let leftEmpty = false;
-                    let rightEmpty = false;
-                    
-                    if (i === 0) {
-                        leftEmpty = true; // edge is considered boundary wall/aisle
-                    } else {
-                        let leftId = `seat-${rowLabel}-${validSeats[i-1]}`;
-                        leftEmpty = (screenSeats[leftId] || tempSelected.includes(leftId));
-                    }
+            let blocks = getRowSubBlocks(rowObj);
 
-                    if (i === validSeats.length - 1) {
-                        rightEmpty = true;
-                    } else {
-                        let rightId = `seat-${rowLabel}-${validSeats[i+1]}`;
-                        rightEmpty = (screenSeats[rightId] || tempSelected.includes(rightId));
-                    }
+            for (let block of blocks) {
+                // Sort block numbers ascending (e.g. 1, 2, 3, 4)
+                let sortedBlock = [...block].sort((a,b) => a - b);
 
-                    // If both neighbors are blocked/booked/selected, this single empty seat is isolated!
-                    if (leftEmpty && rightEmpty) {
-                        return true;
+                for (let i = 0; i < sortedBlock.length; i++) {
+                    let num = sortedBlock[i];
+                    let sId = `seat-${rowLabel}-${num}`;
+                    let isTaken = screenSeats[sId] || tempSelected.includes(sId);
+
+                    if (!isTaken) {
+                        // Check if this empty seat is an aisle boundary (start or end of block)
+                        let isLeftBoundary = (i === 0);
+                        let isRightBoundary = (i === sortedBlock.length - 1);
+
+                        if (isLeftBoundary || isRightBoundary) {
+                            // Check neighbors to see if it's a single isolated empty seat on the aisle boundary
+                            let neighborTaken = true;
+                            if (isLeftBoundary) {
+                                let rightNum = sortedBlock[i+1];
+                                let rightId = `seat-${rowLabel}-${rightNum}`;
+                                neighborTaken = (screenSeats[rightId] || tempSelected.includes(rightId));
+                            } else {
+                                let leftNum = sortedBlock[i-1];
+                                let leftId = `seat-${rowLabel}-${leftNum}`;
+                                neighborTaken = (screenSeats[leftId] || tempSelected.includes(leftId));
+                            }
+
+                            // If the adjacent seat inside is taken, this leaves 1 single empty seat at the aisle!
+                            if (neighborTaken) {
+                                return true;
+                            }
+                        } else {
+                            // Middle empty seat check
+                            let leftId = `seat-${rowLabel}-${sortedBlock[i-1]}`;
+                            let rightId = `seat-${rowLabel}-${sortedBlock[i+1]}`;
+                            let leftTaken = (screenSeats[leftId] || tempSelected.includes(leftId));
+                            let rightTaken = (screenSeats[rightId] || tempSelected.includes(rightId));
+
+                            if (leftTaken && rightTaken) {
+                                return true;
+                            }
+                        }
                     }
                 }
             }
@@ -438,12 +470,11 @@
             let rowLabel = parts[0];
             let seatNum = parseInt(parts[1]);
 
-            // Test if selecting this creates an isolated single seat gap
             let isSelecting = !selectedSeats.includes(seatId);
             if (isSelecting) {
                 let willCreateGap = checkIsolatedGapWarning(rowLabel, seatNum, screenSeats);
                 if (willCreateGap) {
-                    alert("ခုံကို ကြားထဲမှာ တစ်ခုံပဲ ချန်ထားလို့မရပါဘူးရှင့်။ အနည်းဆုံး နှစ်ခုံချန်ပါ (သို့) အစွန်းမှ စဖြတ်ပေးပါရှင်။");
+                    alert("ခုံကို ကြားထဲမှာဖြစ်စေ၊ လျှောက်လမ်းဘေးမှာဖြစ်စေ တစ်ခုံတည်း ညပ်ကျန်အောင် ချန်ထားလို့မရပါဘူးရှင့်။ အစွန်းမှ စဖြတ်ပါ သို့မဟုတ် တွဲလျက်ရွေးချယ်ပေးပါရှင်။");
                     return;
                 }
             }
