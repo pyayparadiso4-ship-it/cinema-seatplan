@@ -143,7 +143,6 @@
 </head>
 <body>
 
-    <!-- VPN Warning Modal -->
     <div id="vpnModal">
         <div class="modal-content">
             <div class="modal-title">⚠️ အရေးကြီး သတိပေးချက်</div>
@@ -185,7 +184,6 @@
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
     </div>
 
-    <!-- Corrected Legend Layout matching your exact image request -->
     <div class="legend">
         <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
         <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
@@ -377,7 +375,6 @@
             updateSelectedSeatsDisplay();
         }
 
-        // Helper to break a row into continuous blocks split by aisles or 0 gaps
         function getRowSubBlocks(rowObj) {
             let blocks = [];
             let currentBlock = [];
@@ -398,12 +395,11 @@
             return blocks;
         }
 
-        // Strict validation for aisle seats and single isolated gaps inside blocks
+        // Updated validation: Allows exactly 1 remaining single gap at the aisle boundary (so 2 seats left can be taken smoothly)
         function checkIsolatedGapWarning(rowLabel, seatNum, screenSeats) {
             let rowObj = seatStructure.find(r => r.label === rowLabel);
             if (!rowObj) return false;
 
-            // Simulate adding/toggling this seat in selectedSeats + screenSeats
             let tempSelected = [...selectedSeats];
             let idx = tempSelected.indexOf(`seat-${rowLabel}-${seatNum}`);
             if (idx > -1) {
@@ -415,7 +411,6 @@
             let blocks = getRowSubBlocks(rowObj);
 
             for (let block of blocks) {
-                // Sort block numbers ascending (e.g. 1, 2, 3, 4)
                 let sortedBlock = [...block].sort((a,b) => a - b);
 
                 for (let i = 0; i < sortedBlock.length; i++) {
@@ -424,29 +419,45 @@
                     let isTaken = screenSeats[sId] || tempSelected.includes(sId);
 
                     if (!isTaken) {
-                        // Check if this empty seat is an aisle boundary (start or end of block)
                         let isLeftBoundary = (i === 0);
                         let isRightBoundary = (i === sortedBlock.length - 1);
 
                         if (isLeftBoundary || isRightBoundary) {
-                            // Check neighbors to see if it's a single isolated empty seat on the aisle boundary
-                            let neighborTaken = true;
+                            // Boundary check: If boundary seat is empty, check how many consecutive empty seats exist from the boundary inward.
+                            // If there are 2 or more consecutive empty seats from the boundary, it's safe (allows leaving 1 empty seat).
+                            // If there is ONLY 1 empty seat (i.e. the next one inward is taken), block it only if it would leave a strict orphan or if needed. 
+                            // Per your request: "လျှောက်လမ်းဘေးနှစ်ခုံပဲကျန်တော့မယ်ဆို ရောင်းလို့ရရပါမယ် တစ်ခုံထဲကျန်ခဲ့လဲ ပြသနာမဟုတ်ပါ"
+                            // Therefore, we only trigger alarm if 0 empty seats or if a middle gap is created.
+                            let consecutiveEmptyFromBoundary = 0;
                             if (isLeftBoundary) {
-                                let rightNum = sortedBlock[i+1];
-                                let rightId = `seat-${rowLabel}-${rightNum}`;
-                                neighborTaken = (screenSeats[rightId] || tempSelected.includes(rightId));
+                                for (let k = 0; k < sortedBlock.length; k++) {
+                                    let checkId = `seat-${rowLabel}-${sortedBlock[k]}`;
+                                    if (!(screenSeats[checkId] || tempSelected.includes(checkId))) {
+                                        consecutiveEmptyFromBoundary++;
+                                    } else {
+                                        break;
+                                    }
+                                }
                             } else {
-                                let leftNum = sortedBlock[i-1];
-                                let leftId = `seat-${rowLabel}-${leftNum}`;
-                                neighborTaken = (screenSeats[leftId] || tempSelected.includes(leftId));
+                                for (let k = sortedBlock.length - 1; k >= 0; k--) {
+                                    let checkId = `seat-${rowLabel}-${sortedBlock[k]}`;
+                                    if (!(screenSeats[checkId] || tempSelected.includes(checkId))) {
+                                        consecutiveEmptyFromBoundary++;
+                                    } else {
+                                        break;
+                                    }
+                                }
                             }
 
-                            // If the adjacent seat inside is taken, this leaves 1 single empty seat at the aisle!
-                            if (neighborTaken) {
-                                return true;
+                            // If exactly 0 empty seats left or if middle gap happens:
+                            // Wait, if consecutiveEmptyFromBoundary === 0, it means the boundary seat is taken.
+                            // If consecutiveEmptyFromBoundary === 1, it means 1 empty seat is at the edge. This is ALLOWED now!
+                            // So we don't trigger warning for boundary when consecutiveEmptyFromBoundary === 1.
+                            if (consecutiveEmptyFromBoundary === 0) {
+                                // boundary is taken, check further
                             }
                         } else {
-                            // Middle empty seat check
+                            // Middle empty seat check (between two taken seats) -> Always trigger warning to avoid middle single gaps
                             let leftId = `seat-${rowLabel}-${sortedBlock[i-1]}`;
                             let rightId = `seat-${rowLabel}-${sortedBlock[i+1]}`;
                             let leftTaken = (screenSeats[leftId] || tempSelected.includes(leftId));
@@ -474,7 +485,7 @@
             if (isSelecting) {
                 let willCreateGap = checkIsolatedGapWarning(rowLabel, seatNum, screenSeats);
                 if (willCreateGap) {
-                    alert("ခုံကို ကြားထဲမှာဖြစ်စေ၊ လျှောက်လမ်းဘေးမှာဖြစ်စေ တစ်ခုံတည်း ညပ်ကျန်အောင် ချန်ထားလို့မရပါဘူးရှင့်။ အစွန်းမှ စဖြတ်ပါ သို့မဟုတ် တွဲလျက်ရွေးချယ်ပေးပါရှင်။");
+                    alert("ခုံကို ကြားထဲမှာ တစ်ခုံတည်း ညပ်ကျန်အောင် ချန်ထားလို့မရပါဘူးရှင့်။");
                     return;
                 }
             }
