@@ -20,20 +20,13 @@
         }
         .modal-content {
             background: #1e1e1e; border: 2px solid #ff3333; border-radius: 10px;
-            max-width: 420px; width: 100%; padding: 20px; text-align: center;
+            max-width: 400px; width: 100%; padding: 20px; text-align: center;
             box-shadow: 0 5px 25px rgba(255, 51, 51, 0.6);
         }
         .modal-title { font-size: 16px; font-weight: bold; color: #ff3333; margin-bottom: 12px; }
         .checking-text { color: #ffeb3b; font-size: 13px; font-weight: bold; margin-bottom: 12px; }
-        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 15px; text-align: left; }
+        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 20px; text-align: left; }
         
-        /* Modal ထဲက မေတ္တာရပ်ခံချက် အထူးဒီဇိုင်း */
-        .modal-notice {
-            background: #2a2200; border: 1px dashed #ffeb3b; padding: 10px;
-            border-radius: 6px; font-size: 12px; line-height: 1.5; color: #ffeb3b;
-            text-align: left; margin-bottom: 15px;
-        }
-
         /* Oki ခလုတ်ကို လုံးဝ ဖျောက်ထားမည် */
         .modal-btn { display: none !important; }
 
@@ -128,11 +121,20 @@
             padding: 12px 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: #ddd;
         }
         .notice-box b { color: #ffeb3b; }
+
+        /* ဝင်လာချင်း ၅ စက္ကန့်ပြမည့် Popup Notification အထူးစတိုင် */
+        #welcomeNoticePopup {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #2a2200; border: 2px solid #ffeb3b; color: #ffeb3b;
+            padding: 15px 20px; border-radius: 8px; z-index: 9998; max-width: 500px; width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8); font-size: 13px; line-height: 1.5;
+            text-align: center; display: none;
+        }
     </style>
 </head>
 <body>
 
-    <!-- VPN Warning & Check Modal -->
+    <!-- VPN Warning Modal (စာသားများ ဖယ်ရှားပြီး) -->
     <div id="vpnModal">
         <div class="modal-content">
             <div class="modal-title">🚨 VPN လိုအပ်ပါသည် 🚨</div>
@@ -140,12 +142,13 @@
             <div class="modal-text">
                 ကျေးဇူးပြု၍ <b>VPN အရင်ချိတ်ဆက်ပေးပါ</b>။ VPN မခံထားပါက ဇယားကွက်ကို အသုံးပြု၍မရပါ။ VPN ချိတ်ပြီးပါက စာမျက်နှာကို Refresh (Reload) ထပ်လုပ်ပေးပါ။
             </div>
-            <!-- VPN မရောက်ခင် ပေါ်မည့်နေရာတွင် ထည့်သွင်းထားသော စာသား -->
-            <div class="modal-notice">
-                <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက 09457143360 တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)
-            </div>
             <button class="modal-btn" id="modalOkBtn">Oki</button>
         </div>
+    </div>
+
+    <!-- VPN ကျော်ပြီး ဝင်လာချင်း ၅ စက္ကန့်ပေါ်မည့် Notice Popup -->
+    <div id="welcomeNoticePopup">
+        <b>⚠️ မေတ္တာရပ်ခံချက်:</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက 09457143360 သို့ ဆက်သွယ်နိုင်ပါသည်)။
     </div>
 
     <div class="screens-nav-container">
@@ -185,7 +188,7 @@
         <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
     </div>
 
-    <!-- အရောင်နှင့် ဈေးနှုန်းပြသည့်နေရာ၏ အောက်ဘက် Notice Box -->
+    <!-- ဈေးနှုန်းပြသည့်နေရာ၏ အောက်ဘက် Notice Box -->
     <div class="notice-box">
         <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
         <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက မှာယူထားသော ခုံများနှင့် ကျသင့်ငွေ Total Amount စာသားများ Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
@@ -195,6 +198,7 @@
         async function checkVpnAndNetwork() {
             const statusEl = document.getElementById('checkingStatus');
             const modalEl = document.getElementById('vpnModal');
+            const welcomePopup = document.getElementById('welcomeNoticePopup');
 
             try {
                 let response = await fetch('https://ipapi.co/json/');
@@ -203,7 +207,16 @@
                 if (data.country_code === 'MM') {
                     statusEl.innerText = "❌ VPN မခံထားပါ (မြန်မာ IP ဖြစ်နေသည်)";
                 } else {
+                    // VPN ကျော်ပြီး ဝင်လာနိုင်ပြီဆိုလျှင် Modal ပျောက်မည်
                     modalEl.style.display = 'none';
+                    
+                    // ဝင်ဝင်ချင်း ၅ စက္ကန့်ပေါ်လာမည့် Notice Popup ကို ပြမည်
+                    welcomePopup.style.display = 'block';
+                    
+                    // ၅ စက္ကန့် (မီလီစက္ကန့် ၅၀၀၀) ပြည့်လျှင် အလိုအလျောက် ပျောက်သွားမည်
+                    setTimeout(() => {
+                        welcomePopup.style.display = 'none';
+                    }, 5000);
                 }
             } catch (error) {
                 statusEl.innerText = "⚠️ Network ချိတ်ဆက်မှု အမှားရှိနေပါသည်။ VPN အရင်ချိတ်ပါ။";
