@@ -185,7 +185,7 @@
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
     </div>
 
-    <!-- Corrected & Positioned Legend Layout as requested -->
+    <!-- Correct Legend Layout -->
     <div class="legend">
         <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
         <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
@@ -397,7 +397,7 @@
             return blocks;
         }
 
-        // Strict validation preventing single isolated gaps at aisle boundaries or anywhere in 4-seat blocks / 10-seat / 18-seat rows
+        // Only check for middle gaps (leaving a single gap in the middle), allowing boundary/edge 2 seats to be taken freely.
         function checkIsolatedGapWarning(rowLabel, seatNum, screenSeats) {
             let rowObj = seatStructure.find(r => r.label === rowLabel);
             if (!rowObj) return false;
@@ -415,55 +415,24 @@
             for (let block of blocks) {
                 let sortedBlock = [...block].sort((a,b) => a - b);
 
-                // If block length is 4 (e.g. 4-seat blocks), check if user tries to leave exactly 2 middle seats or isolated 1 seat
-                // Specifically: "လေးခုံတွဲ အတန်းတွေကို ကြားထဲက နှစ်ခုံပဲယူလို့ မရအောင်လုပ်ချင်တာ"
-                if (sortedBlock.length === 4) {
-                    let unselectedCountInBlock = 0;
-                    let blockTakenCount = 0;
-                    sortedBlock.forEach(num => {
-                        let sId = `seat-${rowLabel}-${num}`;
-                        if (screenSeats[sId] || tempSelected.includes(sId)) {
-                            blockTakenCount++;
-                        }
-                    });
-                    // If 2 seats are taken and 2 are left, check if they are the middle two or outer two.
-                    // If middle two are taken leaving outer two single, or if outer two taken leaving middle two single:
-                    if (blockTakenCount === 2) {
-                        let s1 = `seat-${rowLabel}-${sortedBlock[0]}`;
-                        let s2 = `seat-${rowLabel}-${sortedBlock[1]}`;
-                        let s3 = `seat-${rowLabel}-${sortedBlock[2]}`;
-                        let s4 = `seat-${rowLabel}-${sortedBlock[3]}`;
-                        let t1 = (screenSeats[s1] || tempSelected.includes(s1));
-                        let t2 = (screenSeats[s2] || tempSelected.includes(s2));
-                        let t3 = (screenSeats[s3] || tempSelected.includes(s3));
-                        let t4 = (screenSeats[s4] || tempSelected.includes(s4));
-                        
-                        // If middle two (s2, s3) are taken or outer two (s1, s4) are taken in a way that leaves single gaps
-                        if ((t2 && t3) || (t1 && t4)) {
-                            // Wait, if t2 and t3 are taken, s1 and s4 are left (one on each end, which is fine). 
-                            // But if t1 and t2 are taken, s3 and s4 are left (two together, which is fine).
-                            // What if someone tries to take s1 and t4, leaving s2, s3? That leaves 2 middle seats. User says: "ကြားထဲက နှစ်ခုံပဲယူလို့ မရအောင်လုပ်ချင်တာ" -> meaning taking the 2 middle seats of a 4-seat block should be blocked, OR leaving 2 middle seats should be blocked.
-                            // Let's block if s2 and s3 are the ONLY ones taken (leaving outer single seats) OR if s2 and s3 are left alone (middle 2 seats taken/untaken issue).
-                            if (t2 && t3 && (!t1 && !t4)) {
-                                return true; // leaves single seats at both ends of the 4-seat block
-                            }
-                        }
-                    }
-                }
-
-                // Check for single isolated empty seats anywhere in the block (including aisle boundaries like H5, H26)
                 for (let i = 0; i < sortedBlock.length; i++) {
                     let num = sortedBlock[i];
                     let sId = `seat-${rowLabel}-${num}`;
                     let isTaken = screenSeats[sId] || tempSelected.includes(sId);
 
                     if (!isTaken) {
-                        let leftTaken = (i === 0) || (screenSeats[`seat-${rowLabel}-${sortedBlock[i-1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i-1]}`));
-                        let rightTaken = (i === sortedBlock.length - 1) || (screenSeats[`seat-${rowLabel}-${sortedBlock[i+1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i+1]}`));
+                        let isLeftBoundary = (i === 0);
+                        let isRightBoundary = (i === sortedBlock.length - 1);
 
-                        // If both neighbors are taken, this single empty seat is isolated (orphaned gap)
-                        if (leftTaken && rightTaken) {
-                            return true;
+                        // If it's a boundary (edge) seat, we ALLOW it to be left alone or taken freely per user request.
+                        // We only check for strict middle isolated gaps (where both left and right neighbors are taken).
+                        if (!isLeftBoundary && !isRightBoundary) {
+                            let leftTaken = (screenSeats[`seat-${rowLabel}-${sortedBlock[i-1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i-1]}`));
+                            let rightTaken = (screenSeats[`seat-${rowLabel}-${sortedBlock[i+1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i+1]}`));
+
+                            if (leftTaken && rightTaken) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -483,7 +452,7 @@
             if (isSelecting) {
                 let willCreateGap = checkIsolatedGapWarning(rowLabel, seatNum, screenSeats);
                 if (willCreateGap) {
-                    alert("ဤနေရာတွင် ခုံတစ်ခုံတည်း (သို့မဟုတ် ကြားကခုံများ) ညပ်ကျန်ခဲ့စေမည့် ရွေးချယ်မှုမျိုး မလုပ်ရပါရှင်။");
+                    alert("ကြားထဲတွင် ခုံတစ်ခုံတည်း ညပ်ကျန်ခဲ့စေမည့် ရွေးချယ်မှုမျိုး မလုပ်ရပါရှင်။");
                     return;
                 }
             }
