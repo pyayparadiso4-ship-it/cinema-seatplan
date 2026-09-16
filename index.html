@@ -15,7 +15,7 @@
         /* VPN Modal Popup Overlay */
         #vpnModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.92); display: flex; justify-content: center;
+            background: rgba(0, 0, 0, 0.95); display: flex; justify-content: center;
             align-items: center; z-index: 9999; padding: 20px;
         }
         .modal-content {
@@ -28,15 +28,12 @@
         .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 20px; text-align: left; }
         
         .modal-btn {
-            background-color: #444; color: #888; border: none; padding: 10px 25px;
-            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: not-allowed;
+            background-color: #00ff66; color: #000; border: none; padding: 10px 25px;
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer;
             transition: all 0.3s ease; width: 100%; display: none;
-        }
-        .modal-btn.active {
-            background-color: #00ff66; color: #000; cursor: pointer;
             box-shadow: 0 0 10px rgba(0,255,102,0.4);
         }
-        .modal-btn.active:hover { background-color: #00cc52; }
+        .modal-btn:hover { background-color: #00cc52; }
 
         .screens-nav-container {
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
@@ -143,9 +140,9 @@
             <div class="modal-title" id="modalTitle">🚨 VPN စစ်ဆေးနေပါသည် 🚨</div>
             <div class="checking-text" id="checkingStatus">ချိတ်ဆက်မှုကို စစ်ဆေးနေပါပြီ ခေတ္တစောင့်ပါ...</div>
             <div class="modal-text" id="modalDescText">
-                ကျေးဇူးပြု၍ VPN ခံပြီး ခုံရွေးbookingတင်ပါ။ VPN မခံပါက ရောင်းထားသောခုံများ ပေါ်လာမည်မဟုတ်သဖြင့် Booking တင်၍မရပါ。
+                ကျေးဇူးပြု၍ VPN ခံပြီး ခုံရွေးbookingတင်ပါ။ VPN မခံပါက ရောင်းထားသောခုံများ ပေါ်လာမည်မဟုတ်သဖြင့် Booking တင်၍မရပါ။
             </div>
-            <button class="modal-btn" id="modalOkBtn" onclick="closeVpnModal()" disabled>Oki (3)</button>
+            <button class="modal-btn" id="modalOkBtn" onclick="closeVpnModal()">Oki</button>
         </div>
     </div>
 
@@ -191,59 +188,34 @@
     </div>
 
     <script>
-        let isVpnVerified = false;
-        let countdown = 3;
-        const modalBtn = document.getElementById('modalOkBtn');
-        let timerInterval = null;
-
         // --- Automatic VPN / Country Check on Load ---
         async function checkVpnAndNetwork() {
             const statusEl = document.getElementById('checkingStatus');
             const titleEl = document.getElementById('modalTitle');
             const descEl = document.getElementById('modalDescText');
-            const modalEl = document.getElementById('vpnModal');
+            const modalBtn = document.getElementById('modalOkBtn');
 
             try {
                 let response = await fetch('https://ipapi.co/json/');
                 let data = await response.json();
 
-                // မြန်မာ IP (`MM`) ဖြစ်နေပါက VPN မခံထားဟု သတ်မှတ်မည်
+                // မြန်မာ IP (`MM`) ဖြစ်နေပါက VPN မခံထားဟု ယူဆပြီး Modal ကို ဆက်ပြထားမည် (Oki ခလုတ်ကို ဖျောက်ထားမည်)
                 if (data.country_code === 'MM') {
-                    statusEl.innerText = "❌ VPN မတွေ့ရှိပါ (မြန်မာ IP ဖြစ်နေသည်)";
+                    statusEl.innerText = "❌ VPN မခံထားပါ (မြန်မာ IP ဖြစ်နေသည်)";
                     titleEl.innerText = "⚠️ VPN လိုအပ်ပါသည်";
-                    descEl.innerHTML = "<b>သတိပေးချက် -</b> သင်သည် VPN မခံထားဘဲ ဝင်ရောက်နေပါသည်။ ရောင်းပြီးသားခုံများ မှန်ကန်စွာပေါ်လာစေရန် ကျေးဇူးပြု၍ <b>VPN ချိတ်ဆက်ပြီးမှသာ</b> ဤစာမျက်နှာကို ပြန်လည် Refresh လုပ်ပါ။";
-                    modalBtn.style.display = 'block';
-                    modalBtn.disabled = true;
-                    modalBtn.innerText = "VPN မတွေ့ရှိသေးပါ";
+                    descEl.innerHTML = "<b>သတိပေးချက် -</b> သင်သည် VPN မခံထားဘဲ ဝင်ရောက်နေပါသည်။ ရောင်းပြီးသားခုံများ ပေါ်လာစေရန် ကျေးဇူးပြု၍ <b>VPN အရင်ချိတ်ဆက်ပြီးမှသာ</b> ဤစာမျက်နှာကို ပြန်လည် Refresh (Reload) လုပ်ပါ။";
+                    modalBtn.style.display = 'none'; 
                 } else {
-                    // VPN ခံထားပြီးဖြစ်ပါက (သို့မဟုတ် ပြည်ပ IP ဖြစ်နေပါက) Modal ကို အလိုအလျောက် ဖြုတ်ပေးမည်
-                    isVpnVerified = true;
-                    modalEl.style.display = 'none';
+                    // ပြည်ပ IP (VPN ခံထားပြီး) ဖြစ်မှသာ Modal ပျောက်သွားပြီး ဇယားကွက်ကို အသုံးပြုခွင့်ပေးမည်
+                    document.getElementById('vpnModal').style.display = 'none';
                 }
             } catch (error) {
-                // Network error သို့မဟုတ် API ချိတ်မရပါက လုံခြုံရေးအရ ၃ စက္ကန့်စောင့်ပြီး ဝင်ခွင့်ပေးမည့် ပုံစံပြောင်းပေးမည်
-                statusEl.innerText = "⚠️ Network စစ်ဆေး၍ မရပါ။ ခေတ္တစောင့်ပါ...";
-                startCountdownTimer();
+                statusEl.innerText = "⚠️ Network ချိတ်ဆက်မှု အမှားရှိနေပါသည်။ VPN ရှိမရှိ စစ်ဆေး၍မရပါ။";
+                modalBtn.style.display = 'block'; // အကယ်၍ Error တက်ရင် အရန်အနေနဲ့ Oki ခလုတ်ပြပေးမည်
             }
         }
 
-        function startCountdownTimer() {
-            modalBtn.style.display = 'block';
-            timerInterval = setInterval(() => {
-                countdown--;
-                if (countdown > 0) {
-                    modalBtn.innerText = `Oki (${countdown})`;
-                } else {
-                    clearInterval(timerInterval);
-                    modalBtn.innerText = "Oki";
-                    modalBtn.classList.add('active');
-                    modalBtn.disabled = false;
-                }
-            }, 1000);
-        }
-
         function closeVpnModal() {
-            if (modalBtn.disabled) return;
             document.getElementById('vpnModal').style.display = 'none';
         }
 
