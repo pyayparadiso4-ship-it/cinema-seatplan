@@ -20,17 +20,22 @@
         }
         .modal-content {
             background: #1e1e1e; border: 2px solid #ff3333; border-radius: 10px;
-            max-width: 400px; width: 100%; padding: 20px; text-align: center;
+            max-width: 420px; width: 100%; padding: 20px; text-align: center;
             box-shadow: 0 5px 25px rgba(255, 51, 51, 0.6);
         }
         .modal-title { font-size: 16px; font-weight: bold; color: #ff3333; margin-bottom: 12px; }
         .checking-text { color: #ffeb3b; font-size: 13px; font-weight: bold; margin-bottom: 12px; }
-        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 20px; text-align: left; }
+        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 15px; text-align: left; }
         
-        /* Oki ခလုတ်ကို လုံးဝ ဖျောက်ထားမည် (VPN ခံမှသာ ပျောက်ကွယ်သွားမည်) */
-        .modal-btn {
-            display: none !important;
+        /* Modal ထဲက မေတ္တာရပ်ခံချက် အထူးဒီဇိုင်း */
+        .modal-notice {
+            background: #2a2200; border: 1px dashed #ffeb3b; padding: 10px;
+            border-radius: 6px; font-size: 12px; line-height: 1.5; color: #ffeb3b;
+            text-align: left; margin-bottom: 15px;
         }
+
+        /* Oki ခလုတ်ကို လုံးဝ ဖျောက်ထားမည် */
+        .modal-btn { display: none !important; }
 
         .screens-nav-container {
             background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
@@ -38,9 +43,7 @@
         }
         .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-align: center; }
         
-        .screens-nav {
-            display: flex; flex-direction: column; gap: 12px; width: 100%;
-        }
+        .screens-nav { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
         .date-group {
             background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px;
@@ -51,9 +54,7 @@
             border-bottom: 1px solid #333; padding-bottom: 4px;
         }
 
-        .times-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
-        }
+        .times-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 
         .screen-tab {
             background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 6px;
@@ -131,13 +132,17 @@
 </head>
 <body>
 
-    <!-- VPN Warning & Check Modal (ပိတ်လို့မရအောင်၊ Oki လုံးဝမပါအောင် လုပ်ထားသည်) -->
+    <!-- VPN Warning & Check Modal -->
     <div id="vpnModal">
         <div class="modal-content">
-            <div class="modal-title" id="modalTitle">🚨 VPN လိုအပ်ပါသည် 🚨</div>
+            <div class="modal-title">🚨 VPN လိုအပ်ပါသည် 🚨</div>
             <div class="checking-text" id="checkingStatus">ချိတ်ဆက်မှုကို စစ်ဆေးနေပါပြီ...</div>
-            <div class="modal-text" id="modalDescText">
+            <div class="modal-text">
                 ကျေးဇူးပြု၍ <b>VPN အရင်ချိတ်ဆက်ပေးပါ</b>။ VPN မခံထားပါက ဇယားကွက်ကို အသုံးပြု၍မရပါ။ VPN ချိတ်ပြီးပါက စာမျက်နှာကို Refresh (Reload) ထပ်လုပ်ပေးပါ။
+            </div>
+            <!-- VPN မရောက်ခင် ပေါ်မည့်နေရာတွင် ထည့်သွင်းထားသော စာသား -->
+            <div class="modal-notice">
+                <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက 09457143360 တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)
             </div>
             <button class="modal-btn" id="modalOkBtn">Oki</button>
         </div>
@@ -180,12 +185,13 @@
         <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
     </div>
 
+    <!-- အရောင်နှင့် ဈေးနှုန်းပြသည့်နေရာ၏ အောက်ဘက် Notice Box -->
     <div class="notice-box">
+        <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
         <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက မှာယူထားသော ခုံများနှင့် ကျသင့်ငွေ Total Amount စာသားများ Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
     </div>
 
     <script>
-        // --- Automatic VPN / Country Check on Load ---
         async function checkVpnAndNetwork() {
             const statusEl = document.getElementById('checkingStatus');
             const modalEl = document.getElementById('vpnModal');
@@ -194,11 +200,9 @@
                 let response = await fetch('https://ipapi.co/json/');
                 let data = await response.json();
 
-                // မြန်မာ IP ဖြစ်နေပါက Modal ကို ဆက်ပြထားမည် (ဇယားကွက်ကို လုံးဝ မဖြုတ်ပေးပါ)
                 if (data.country_code === 'MM') {
                     statusEl.innerText = "❌ VPN မခံထားပါ (မြန်မာ IP ဖြစ်နေသည်)";
                 } else {
-                    // ပြည်ပ IP (VPN ခံထားပြီး) ဖြစ်မှသာ Modal ပျောက်သွားပြီး ဇယားကွက် ပေါ်လာမည်
                     modalEl.style.display = 'none';
                 }
             } catch (error) {
@@ -206,7 +210,6 @@
             }
         }
 
-        // Run check when page loads
         window.onload = () => {
             checkVpnAndNetwork();
         };
