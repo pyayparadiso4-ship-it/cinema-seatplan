@@ -120,6 +120,7 @@
         .selected-info { font-size: 14px; margin-bottom: 10px; color: #fff; }
         .selected-info b { color: #00ff66; }
         
+        /* Customer Info Inputs */
         .customer-form {
             display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
             text-align: left; max-width: 350px; margin-left: auto; margin-right: auto;
@@ -130,7 +131,6 @@
             border-radius: 5px; font-size: 13px; width: 100%;
         }
         .customer-input:focus { border-color: #00ff66; outline: none; }
-        .error-msg { color: #ff3333; font-size: 11px; display: none; margin-top: 2px; }
 
         .viber-btn {
             background-color: #7360f2; color: white; border: none; padding: 12px 25px;
@@ -191,9 +191,8 @@
                 <input type="text" id="customerName" class="customer-input" placeholder="သင့်နာမည်ထည့်ပါ">
             </div>
             <div>
-                <label>📞 ဖုန်းနံပါတ် (Phone Number): MPT, Atom, Ooredoo, Mytel</label>
-                <input type="tel" id="customerPhone" class="customer-input" placeholder="ဥပမာ - 09971234567" oninput="validatePhoneInput(this)">
-                <div id="phoneError" class="error-msg">❌ မှန်ကန်သော မြန်မာဖုန်းနံပါတ် (09...) ထည့်ပါ။</div>
+                <label>📞 ဖုန်းနံပါတ် (Phone Number):</label>
+                <input type="tel" id="customerPhone" class="customer-input" placeholder="ဖုန်းနံပါတ်ထည့်ပါ">
             </div>
         </div>
 
@@ -213,7 +212,7 @@
 
     <div class="notice-box">
         <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
-        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ရွေးပါ၊ နာမည်နှင့် မြန်မာဖုန်းနံပါတ်မှန်ကန်စွာဖြည့်ပါ၊ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက အချက်အလက်များ အကုန် Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ရွေးပါ၊ နာမည်နှင့် ဖုန်းနံပါတ်ဖြည့်ပါ၊ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက အချက်အလက်များ အကုန် Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
     </div>
 
     <script>
@@ -435,6 +434,7 @@
         function updateSelectedSeatsDisplay() {
             const listText = document.getElementById('selectedSeatsListText');
             const totalVal = document.getElementById('totalAmountVal');
+            const btn = document.getElementById('viberConfirmBtn');
 
             if (selectedSeats.length > 0) {
                 let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', ''));
@@ -442,27 +442,12 @@
                 
                 let totalPrice = calculateTotalPrice();
                 totalVal.innerText = totalPrice.toLocaleString() + ' ကျပ်';
+                
+                btn.disabled = false;
             } else {
                 listText.innerText = "မရှိသေးပါ";
                 totalVal.innerText = "0 ကျပ်";
-            }
-        }
-
-        // မြန်မာဖုန်းနံပါတ် ဟုတ်မဟုတ်စစ်ဆေးရန် (MPT, Atom, Ooredoo, Mytel)
-        function isValidMyanmarPhone(phone) {
-            // 09 စပြီး ဂဏန်း ၈ လုံးမှ ၉ လုံးပါဝင်သော ဖုန်းနံပါတ်ပုံစံ (ဥပမာ - 09XXXXXXXXX)
-            const phoneRegex = /^09[1-9][0-9]{7,8}$/;
-            return phoneRegex.test(phone);
-        }
-
-        function validatePhoneInput(input) {
-            const phoneError = document.getElementById('phoneError');
-            if (input.value.trim() === '' || isValidMyanmarPhone(input.value.trim())) {
-                phoneError.style.display = 'none';
-                input.style.borderColor = '#00ff66';
-            } else {
-                phoneError.style.display = 'block';
-                input.style.borderColor = '#ff3333';
+                btn.disabled = true;
             }
         }
 
@@ -472,14 +457,8 @@
             let name = document.getElementById('customerName').value.trim();
             let phone = document.getElementById('customerPhone').value.trim();
 
-            if (!name) {
-                alert("ကျေးဇူးပြု၍ ဝယ်ယူသူအမည် ထည့်သွင်းပေးပါခင်ဗျာ။");
-                return;
-            }
-
-            if (!isValidMyanmarPhone(phone)) {
-                alert("ဖုန်းနံပါတ် မမှန်ကန်ပါ။ ကျေးဇူးပြု၍ MPT, Atom, Ooredoo, Mytel ဖုန်းနံပါတ် အမှန် (ဥပမာ- 09971234567) ကို ထည့်သွင်းပေးပါ။");
-                document.getElementById('customerPhone').focus();
+            if (!name || !phone) {
+                alert("ကျေးဇူးပြု၍ သင့်နာမည်နှင့် ဖုန်းနံပါတ်ကို ထည့်သွင်းပေးပါခင်ဗျာ။");
                 return;
             }
 
