@@ -1,72 +1,539 @@
-// --- Updated 4-Seat Blocks Validation Logic ---
-function checkSingleSeatGapViolation(tempSelected, screenSeats) {
-    let rowsMap = {};
-    tempSelected.forEach(seatId => {
-        let parts = seatId.replace('seat-', '').split('-');
-        let rowLabel = parts[0];
-        let num = parseInt(parts[1]);
-        if (!rowsMap[rowLabel]) rowsMap[rowLabel] = [];
-        rowsMap[rowLabel].push(num);
-    });
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paradiso Pyay Cinema - Customer Booking</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    for (let rowLabel in rowsMap) {
-        let nums = rowsMap[rowLabel];
-        let rowConfig = seatStructure.find(r => r.label === rowLabel);
-        if (!rowConfig) continue;
+    <style>
+        * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
+        body { background: #121212; color: #fff; padding: 15px; margin: 0; }
 
-        let validSeats = rowConfig.seats.filter(s => s !== 0);
+        /* VPN Modal Popup Overlay */
+        #vpnModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center;
+            align-items: center; z-index: 9999; padding: 20px;
+        }
+        .modal-content {
+            background: #1e1e1e; border: 2px solid #ffeb3b; border-radius: 10px;
+            max-width: 400px; width: 100%; padding: 20px; text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
+        }
+        .modal-title { font-size: 16px; font-weight: bold; color: #ffeb3b; margin-bottom: 15px; }
+        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 20px; text-align: left; }
+        .modal-btn {
+            background-color: #444; color: #888; border: none; padding: 10px 25px;
+            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: not-allowed;
+            transition: all 0.3s ease; width: 100%;
+        }
+        .modal-btn.active {
+            background-color: #00ff66; color: #000; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,102,0.4);
+        }
+        .modal-btn.active:hover { background-color: #00cc52; }
+
+        .screens-nav-container {
+            background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
+            border: 1px solid #333; width: 100%;
+        }
+        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-align: center; }
         
-        // Split row into continuous blocks (specifically 4-seat blocks)
-        let blocks = [];
-        let currentBlock = [];
-        validSeats.forEach((s, idx) => {
-            currentBlock.push(s);
-            if (idx === validSeats.length - 1 || Math.abs(validSeats[idx+1] - s) > 1) {
-                blocks.push([...currentBlock]);
-                currentBlock = [];
+        .screens-nav { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .date-group { background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px; }
+        .date-header { font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .times-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        
+        .screen-tab {
+            background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 6px;
+            border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;
+            transition: all 0.2s ease; text-align: center; width: 100%;
+        }
+        .screen-tab:hover { background: #444; color: #fff; }
+        .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 8px rgba(255,235,59,0.4); }
+
+        .seat-map-outer {
+            width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
+
+        .movie-display-header {
+            text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
+            border-radius: 6px; margin-bottom: 15px;
+        }
+        .movie-title-text { font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 2px; }
+        .movie-info-sub { font-size: 12px; color: #aaa; }
+
+        .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
+        
+        .seat-map-main-layout { display: flex; justify-content: center; }
+        .seat-rows-area { display: flex; flex-direction: column; }
+
+        .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
+        .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
+        
+        .seat {
+            width: 25px; height: 30px; min-width: 25px; border-radius: 3px; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center;
+            user-select: none; color: #000; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .seat:hover { transform: scale(1.1); }
+        .empty { width: 25px; min-width: 25px; height: 30px; }
+        
+        .price-4000 { background-color: #777670; color: #fff; }
+        .price-5000 { background-color: #9BBB59; }
+        .price-6000 { background-color: #FABF8F; }
+        .price-7000 { background-color: #4BACC6; }
+        .price-8000 { background-color: #CCC0D9; }
+        .price-20000 { background-color: #B97034; color: #fff; }
+
+        .admin-red { background-color: #ff3333 !important; color: white !important; cursor: not-allowed !important; pointer-events: none; }
+        .customer-selected { background-color: #00ff66 !important; color: #000 !important; box-shadow: 0 0 8px #00ff66; }
+
+        .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+
+        .booking-panel {
+            margin-top: 20px; background: #1a1a1a; border: 2px solid #ffeb3b;
+            padding: 15px; border-radius: 8px; text-align: center;
+        }
+        .selected-info { font-size: 14px; margin-bottom: 10px; color: #fff; }
+        .selected-info b { color: #00ff66; }
+        
+        .viber-btn {
+            background-color: #7360f2; color: white; border: none; padding: 12px 25px;
+            font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(115, 96, 242, 0.4); transition: background 0.2s;
+        }
+        .viber-btn:hover { background-color: #5c47e0; }
+        .viber-btn:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+
+        .big-vpn-box {
+            margin-top: 20px; background: #2a1515; border: 2px solid #ff3333;
+            padding: 15px; border-radius: 8px; text-align: center;
+            box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+        }
+        .big-vpn-box h3 { color: #ff3333; margin: 0 0 8px 0; font-size: 15px; }
+        .big-vpn-box p { color: #ffcccc; font-size: 13px; line-height: 1.5; margin: 0; }
+
+        .notice-box {
+            margin-top: 15px; background: #1a1a1a; border: 1px dashed #ffeb3b; 
+            padding: 12px 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: #ddd;
+        }
+        .notice-box b { color: #ffeb3b; }
+    </style>
+</head>
+<body>
+
+    <!-- VPN Warning Modal -->
+    <div id="vpnModal">
+        <div class="modal-content">
+            <div class="modal-title">⚠️ အရေးကြီး သတိပေးချက်</div>
+            <div class="modal-text">
+                ကျေးဇူးပြု၍ VPN ခံပြီး ခုံရွေးbookingတင်ပါ။ VPN မခံပါက ရောင်းထားသောခုံများ ပေါ်လာမည်မဟုတ်သဖြင့် Booking တင်၍မရပါ
+            </div>
+            <button class="modal-btn" id="modalOkBtn" onclick="closeVpnModal()" disabled>Oki (5)</button>
+        </div>
+    </div>
+
+    <div class="screens-nav-container">
+        <div class="screens-nav-title">🎬 ကြည့်ရှုလိုသော ရက်စွဲနှင့် ပွဲချိန် မျက်နှာဇယားကို ရွေးချယ်ပါ</div>
+        <div class="screens-nav" id="screensNav"></div>
+    </div>
+
+    <div class="seat-map-outer">
+        <div class="seat-map-inner">
+            <div class="movie-display-header">
+                <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
+                <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+            </div>
+
+            <div class="screen">SCREEN</div>
+            
+            <div class="seat-map-main-layout">
+                <div class="seat-rows-area" id="seatContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="booking-panel">
+        <div class="selected-info" id="selectedInfoText">ရွေးချယ်ထားသော ခုံများ: <b id="selectedSeatsListText">မရှိသေးပါ</b></div>
+        <div class="selected-info" id="totalAmountText" style="margin-top: 5px;">စုစုပေါင်း ကျသင့်ငွေ: <b id="totalAmountVal">0 ကျပ်</b></div>
+        <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
+    </div>
+
+    <div class="big-vpn-box">
+        <h3>🚨 အထူးသတိပေးချက် 🚨</h3>
+        <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
+        <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
+        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
+        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
+        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
+        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
+        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
+        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
+    </div>
+
+    <div class="notice-box">
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ (၄ ခုံတန်းများတွင် အလယ် ၂ ခုံသီးသန့်ယူခြင်းဖြင့် ဘေးနှစ်ဖက်တွင် တစ်ခုံချင်းစီ ကွက်လပ်ကျန်စေရန် ဖြတ်ယူခွင့်မပြုပါ)။
+    </div>
+
+    <script>
+        let countdown = 5;
+        const modalBtn = document.getElementById('modalOkBtn');
+        
+        const timerInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                modalBtn.innerText = `Oki (${countdown})`;
+            } else {
+                clearInterval(timerInterval);
+                modalBtn.innerText = "Oki";
+                modalBtn.classList.add('active');
+                modalBtn.disabled = false;
             }
-        });
+        }, 1000);
 
-        for (let block of blocks) {
-            if (block.length === 4) {
-                // Sort block numerically ascending for easier neighbor checks
-                let sortedBlock = [...block].sort((a, b) => a - b);
-                
-                // Check each seat in this 4-seat block
-                let isSeatTakenOrSelected = (n) => screenSeats[`seat-${rowLabel}-${n}`] || nums.includes(n);
+        function closeVpnModal() {
+            if (modalBtn.disabled) return;
+            document.getElementById('vpnModal').style.display = 'none';
+        }
 
-                // If user selected 2 seats, check if they are the middle two (e.g., 12 and 13) 
-                // while both outer edges (11 and 14) are empty (not taken and not selected)
-                let selectedInThisBlock = sortedBlock.filter(n => nums.includes(n));
-                
-                if (selectedInThisBlock.length === 2) {
-                    // Check if selected are middle two: sortedBlock[1] and sortedBlock[2]
-                    if (selectedInThisBlock.includes(sortedBlock[1]) && selectedInThisBlock.includes(sortedBlock[2])) {
-                        let outerLeftEmpty = !isSeatTakenOrSelected(sortedBlock[0]);
-                        let outerRightEmpty = !isSeatTakenOrSelected(sortedBlock[3]);
-                        
-                        // If both outer seats are empty, taking the middle two leaves single isolated seats on both sides!
-                        if (outerLeftEmpty && outerRightEmpty) {
-                            return true; // Violation: Cannot take middle two leaving single gaps on both sides!
-                        }
-                    }
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZSob8_C6Bspj8mLiOXtkFqvPg5PDTj_4",
+            authDomain: "paradisopyayseatplan.firebaseapp.com",
+            databaseURL: "https://paradisopyayseatplancinema-default-rtdb.firebaseio.com",
+            projectId: "paradisopyayseatplan",
+            storageBucket: "paradisopyayseatplan.firebasestorage.app",
+            messagingSenderId: "985120964759",
+            appId: "1:985120964759:web:3a90ed2a477b5cecfce9d2",
+            measurementId: "G-2Z9RVC7QWF"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const seatStructure = [
+            { label: 'A', price: 4000, class: 'price-4000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'B', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'C', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'D', price: 5000, class: 'price-5000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'E', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'F', price: 6000, class: 'price-6000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
+            { type: 'gap' },
+            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { type: 'gap' },
+            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+        ];
+
+        let globalData = {
+            settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+            screens: {}
+        };
+        let currentScreenId = 'screen_1';
+        let selectedSeats = [];
+
+        function initFirebaseSync() {
+            database.ref('paradiso_cinema').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    globalData = data;
+                } else {
+                    globalData = {
+                        settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+                        screens: {}
+                    };
                 }
+                buildScreensNav();
+                updateUI();
+            });
+        }
 
-                // General single-gap check inside the 4-seat block
-                for (let i = 0; i < sortedBlock.length; i++) {
-                    let targetSeat = sortedBlock[i];
-                    if (!isSeatTakenOrSelected(targetSeat)) {
-                        let leftBlocked = (i === 0) || isSeatTakenOrSelected(sortedBlock[i - 1]);
-                        let rightBlocked = (i === sortedBlock.length - 1) || isSeatTakenOrSelected(sortedBlock[i + 1]);
+        function buildScreensNav() {
+            const nav = document.getElementById('screensNav');
+            nav.innerHTML = '';
+            
+            const dates = globalData.settings?.dates || ["", "", ""];
+            const times = globalData.settings?.times || ["", "", "", ""];
+            const movies = globalData.settings?.movies || {};
 
-                        // If an empty seat is trapped between taken/selected seats (single gap)
-                        if (leftBlocked && rightBlocked) {
-                            return true; // Violation: Leaves a single isolated empty gap!
-                        }
-                    }
+            let count = 1;
+            for (let d = 0; d < 3; d++) {
+                let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                
+                const dateGroup = document.createElement('div');
+                dateGroup.className = 'date-group';
+
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'date-header';
+                dateHeader.innerText = `📅 ${dateStr}`;
+                dateGroup.appendChild(dateHeader);
+
+                const timesGrid = document.createElement('div');
+                timesGrid.className = 'times-grid';
+
+                for (let t = 0; t < 4; t++) {
+                    let timeStr = times[t] ? times[t] : `Show ${t+1}`;
+                    let sId = `screen_${count}`;
+                    let movieShort = movies[sId] ? ` (${movies[sId]})` : '';
+                    
+                    const btn = document.createElement('button');
+                    btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
+                    btn.innerText = `${timeStr}${movieShort}`;
+                    
+                    let capturedId = sId;
+                    btn.onclick = () => {
+                        currentScreenId = capturedId;
+                        selectedSeats = [];
+                        buildScreensNav();
+                        updateUI();
+                    };
+                    timesGrid.appendChild(btn);
+                    count++;
                 }
+                dateGroup.appendChild(timesGrid);
+                nav.appendChild(dateGroup);
             }
         }
-    }
-    return false;
-}
+
+        function getActiveScreenSeats() {
+            if (!globalData.screens) globalData.screens = {};
+            if (!globalData.screens[currentScreenId]) globalData.screens[currentScreenId] = {};
+            return globalData.screens[currentScreenId];
+        }
+
+        function calculateTotalPrice() {
+            let total = 0;
+            selectedSeats.forEach(seatId => {
+                let parts = seatId.replace('seat-', '').split('-');
+                let rowLabel = parts[0];
+                let rowData = seatStructure.find(r => r.label === rowLabel);
+                if (rowData) {
+                    total += rowData.price;
+                }
+            });
+            return total;
+        }
+
+        function updateUI() {
+            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
+            let dIndex = Math.floor(screenIndex / 4);
+            let tIndex = screenIndex % 4;
+            
+            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် မရှိသေးပါ';
+
+            document.getElementById('displayMovieTitle').innerText = movieName;
+            document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
+
+            let screenSeats = getActiveScreenSeats();
+
+            document.querySelectorAll('.seat').forEach(seat => {
+                const seatId = seat.id;
+                seat.classList.remove('admin-red', 'customer-selected');
+                
+                if (screenSeats[seatId]) {
+                    seat.classList.add('admin-red');
+                } else if (selectedSeats.includes(seatId)) {
+                    seat.classList.add('customer-selected');
+                }
+            });
+
+            updateSelectedSeatsDisplay();
+        }
+
+        // --- Enhanced 4-Seat Blocks Validation Logic ---
+        function checkSingleSeatGapViolation(tempSelected, screenSeats) {
+            let rowsMap = {};
+            tempSelected.forEach(seatId => {
+                let parts = seatId.replace('seat-', '').split('-');
+                let rowLabel = parts[0];
+                let num = parseInt(parts[1]);
+                if (!rowsMap[rowLabel]) rowsMap[rowLabel] = [];
+                rowsMap[rowLabel].push(num);
+            });
+
+            for (let rowLabel in rowsMap) {
+                let nums = rowsMap[rowLabel];
+                let rowConfig = seatStructure.find(r => r.label === rowLabel);
+                if (!rowConfig) continue;
+
+                let validSeats = rowConfig.seats.filter(s => s !== 0);
+                
+                let blocks = [];
+                let currentBlock = [];
+                validSeats.forEach((s, idx) => {
+                    currentBlock.push(s);
+                    if (idx === validSeats.length - 1 || Math.abs(validSeats[idx+1] - s) > 1) {
+                        blocks.push([...currentBlock]);
+                        currentBlock = [];
+                    }
+                });
+
+                for (let block of blocks) {
+                    if (block.length === 4) {
+                        let sortedBlock = [...block].sort((a, b) => a - b);
+                        let isSeatTakenOrSelected = (n) => screenSeats[`seat-${rowLabel}-${n}`] || nums.includes(n);
+
+                        let selectedInThisBlock = sortedBlock.filter(n => nums.includes(n));
+                        
+                        // Prevent taking the middle two seats if both outer edges are completely empty
+                        if (selectedInThisBlock.length === 2) {
+                            if (selectedInThisBlock.includes(sortedBlock[1]) && selectedInThisBlock.includes(sortedBlock[2])) {
+                                let outerLeftEmpty = !isSeatTakenOrSelected(sortedBlock[0]);
+                                let outerRightEmpty = !isSeatTakenOrSelected(sortedBlock[3]);
+                                
+                                if (outerLeftEmpty && outerRightEmpty) {
+                                    return true; // Violation: Leaves single isolated seats on both sides!
+                                }
+                            }
+                        }
+
+                        // General single-gap check inside the 4-seat block
+                        for (let i = 0; i < sortedBlock.length; i++) {
+                            let targetSeat = sortedBlock[i];
+                            if (!isSeatTakenOrSelected(targetSeat)) {
+                                let leftBlocked = (i === 0) || isSeatTakenOrSelected(sortedBlock[i - 1]);
+                                let rightBlocked = (i === sortedBlock.length - 1) || isSeatTakenOrSelected(sortedBlock[i + 1]);
+
+                                if (leftBlocked && rightBlocked) {
+                                    return true; // Violation: Single isolated gap
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function handleSeatClick(seatId) {
+            let screenSeats = getActiveScreenSeats();
+            if (screenSeats[seatId]) return;
+
+            let tempSelected = [...selectedSeats];
+            const index = tempSelected.indexOf(seatId);
+            if (index > -1) {
+                tempSelected.splice(index, 1);
+            } else {
+                tempSelected.push(seatId);
+            }
+
+            if (checkSingleSeatGapViolation(tempSelected, screenSeats)) {
+                alert("ကျေးဇူးပြု၍ ၄ ခုံတန်းများတွင် အလယ် ၂ ခုံသီးသန့်ယူခြင်းဖြင့် ဘေးနှစ်ဖက်တွင် တစ်ခုံချင်းစီ ကွက်လပ်ကျန်စေမည့် ပုံစံမျိုး ဖြတ်ယူခွင့်မပြုပါ။");
+                return;
+            }
+
+            selectedSeats = tempSelected;
+            updateUI();
+        }
+
+        function updateSelectedSeatsDisplay() {
+            const listText = document.getElementById('selectedSeatsListText');
+            const totalVal = document.getElementById('totalAmountVal');
+            const btn = document.getElementById('viberConfirmBtn');
+
+            if (selectedSeats.length > 0) {
+                let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', ''));
+                listText.innerText = formattedSeats.join(', ');
+                
+                let totalPrice = calculateTotalPrice();
+                totalVal.innerText = totalPrice.toLocaleString() + ' ကျပ်';
+                
+                btn.disabled = false;
+            } else {
+                listText.innerText = "မရှိသေးပါ";
+                totalVal.innerText = "0 ကျပ်";
+                btn.disabled = true;
+            }
+        }
+
+        function sendToViber() {
+            if (selectedSeats.length === 0) return;
+
+            let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
+            let dIndex = Math.floor(screenIndex / 4);
+            let tIndex = screenIndex % 4;
+            
+            let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
+            let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကား';
+
+            let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', '')).join(', ');
+            let totalPrice = calculateTotalPrice().toLocaleString() + ' ကျပ်';
+
+            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) - စုစုပေါင်းကျသင့်ငွေ: ${totalPrice} ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
+
+            navigator.clipboard.writeText(message).then(() => {
+                alert("ခုံနံပါတ်များနှင့် ကျသင့်ငွေ (Total Amount) ကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
+                window.location.href = `viber://chat?number=%2B959457143360`;
+            }).catch(err => {
+                window.location.href = `viber://chat?number=%2B959457143360`;
+            });
+        }
+
+        const container = document.getElementById('seatContainer');
+        container.innerHTML = '';
+
+        seatStructure.forEach(row => {
+            if (row.type === 'gap') {
+                const gapDiv = document.createElement('div');
+                gapDiv.style.height = '14px';
+                container.appendChild(gapDiv);
+                return;
+            }
+
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'seat-row';
+
+            row.seats.forEach(num => {
+                if (num === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'empty';
+                    rowDiv.appendChild(emptyDiv);
+                } else {
+                    const seatBtn = document.createElement('div');
+                    const seatId = 'seat-' + row.label + '-' + num;
+                    seatBtn.id = seatId;
+                    seatBtn.className = `seat ${row.class}`;
+                    seatBtn.innerText = num;
+                    
+                    seatBtn.onclick = () => handleSeatClick(seatId);
+                    rowDiv.appendChild(seatBtn);
+                }
+            });
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'row-label';
+            labelDiv.innerText = row.label;
+            rowDiv.appendChild(labelDiv);
+
+            container.appendChild(rowDiv);
+        });
+
+        initFirebaseSync();
+    </script>
+</body>
+</html>
