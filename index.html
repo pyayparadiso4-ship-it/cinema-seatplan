@@ -142,10 +142,10 @@
     <!-- VPN Modal Popup -->
     <div id="vpnModal">
         <div class="modal-content">
-            <div class="modal-title">🚨 မေတ္တာရပ်ခံချက် 🚨</div>
+            <div class="modal-title" id="modalTitle">🚨 သတိပေးချက် 🚨</div>
             <div class="checking-text" id="checkingStatus">VPN ချိတ်ဆက်မှုကို စစ်ဆေးနေပါပြီ...</div>
             <div class="modal-text" id="modalNoticeText">
-                ခုံရွေးသည့်အခါ-မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်( မသိတာရှီပါက 09457143360 တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)
+                ခုံရွေးရန် Seat Plan ဇယားကွက်သို့သွားဖို့ VPN ခံဖို့ လိုအပ်ပါသည်
             </div>
             <button class="modal-btn" id="modalOkBtn" disabled>Oki (5)</button>
         </div>
@@ -198,6 +198,8 @@
             const statusEl = document.getElementById('checkingStatus');
             const okBtn = document.getElementById('modalOkBtn');
             const modalEl = document.getElementById('vpnModal');
+            const modalTitleEl = document.getElementById('modalTitle');
+            const modalNoticeTextEl = document.getElementById('modalNoticeText');
 
             try {
                 let response = await fetch('https://ipapi.co/json/');
@@ -205,9 +207,12 @@
 
                 if (data.country_code === 'MM') {
                     statusEl.innerText = "❌ VPN မခံထားပါ (မြန်မာ IP ဖြစ်နေသည်)";
+                    modalNoticeTextEl.innerText = "ခုံရွေးရန် Seat Plan ဇယားကွက်သို့သွားဖို့ VPN ခံဖို့ လိုအပ်ပါသည်";
                     okBtn.innerText = "VPN အရင်ချိတ်ပါ";
                 } else {
                     statusEl.innerText = "✅ VPN ချိတ်ဆက်မှု အောင်မြင်ပါသည်။";
+                    modalTitleEl.innerHTML = "🚨 မေတ္တာရပ်ခံချက် 🚨";
+                    modalNoticeTextEl.innerText = "ခုံရွေးသည့်အခါ-မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်( မသိတာရှီပါက 09457143360 တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)";
                     
                     // ၅ စက္ကန့် တိုင်င်မ်မာ စတင်ရန်
                     let timeLeft = 5;
@@ -229,6 +234,7 @@
                 }
             } catch (error) {
                 statusEl.innerText = "⚠️ Network စစ်ဆေး၍ မရပါ။ VPN အရင်ချိတ်ပါ။";
+                modalNoticeTextEl.innerText = "ခုံရွေးရန် Seat Plan ဇယားကွက်သို့သွားဖို့ VPN ခံဖို့ လိုအပ်ပါသည်";
             }
         }
 
