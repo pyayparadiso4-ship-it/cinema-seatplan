@@ -42,23 +42,11 @@
         }
         .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-align: center; }
         
-        .screens-nav {
-            display: flex; flex-direction: column; gap: 12px; width: 100%;
-        }
-
-        .date-group {
-            background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px;
-        }
-
-        .date-header {
-            font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px; text-align: center;
-            border-bottom: 1px solid #333; padding-bottom: 4px;
-        }
-
-        .times-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
-        }
-
+        .screens-nav { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .date-group { background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px; }
+        .date-header { font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .times-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        
         .screen-tab {
             background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 6px;
             border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold;
@@ -126,7 +114,6 @@
         .viber-btn:hover { background-color: #5c47e0; }
         .viber-btn:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
 
-        /* Big VPN Warning Box at the Bottom */
         .big-vpn-box {
             margin-top: 20px; background: #2a1515; border: 2px solid #ff3333;
             padding: 15px; border-radius: 8px; text-align: center;
@@ -181,7 +168,6 @@
         <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
     </div>
 
-    <!-- Bottom Big VPN Warning Box -->
     <div class="big-vpn-box">
         <h3>🚨 အထူးသတိပေးချက် 🚨</h3>
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
@@ -199,11 +185,10 @@
     </div>
 
     <div class="notice-box">
-        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက မှာယူထားသော ခုံများနှင့် ကျသင့်ငွေ Total Amount စာသားများ Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ (၄ ခုံ သို့မဟုတ် ၃ ခုံ ဆက်တိုက်ယူခွင့်ရှိသည်။ ၁ ခုံ သို့မဟုတ် ၂ ခုံ ယူရာတွင် အလယ်ကွက်လပ်ကျန်မည့်ပုံစံဖြင့် ဖြတ်ယူခွင့်မပြုပါ)။
     </div>
 
     <script>
-        // 5 Seconds Timer for VPN Modal
         let countdown = 5;
         const modalBtn = document.getElementById('modalOkBtn');
         
@@ -379,16 +364,91 @@
             updateSelectedSeatsDisplay();
         }
 
+        // --- Single Seat Gap Validation Logic ---
+        function checkSingleSeatGapViolation(tempSelected, screenSeats) {
+            // Group selected seats by row
+            let rowsMap = {};
+            tempSelected.forEach(seatId => {
+                let parts = seatId.replace('seat-', '').split('-');
+                let rowLabel = parts[0];
+                let num = parseInt(parts[1]);
+                if (!rowsMap[rowLabel]) rowsMap[rowLabel] = [];
+                rowsMap[rowLabel].push(num);
+            });
+
+            // Check each row block
+            for (let rowLabel in rowsMap) {
+                let nums = rowsMap[rowLabel].sort((a, b) => a - b);
+                let count = nums.length;
+
+                // If user selected 1 or 2 seats in this row, let's check if they leave a single isolated gap
+                if (count === 1 || count === 2) {
+                    let rowConfig = seatStructure.find(r => r.label === rowLabel);
+                    if (!rowConfig) continue;
+
+                    // Find all available/booked status for this row's valid seats
+                    let validSeats = rowConfig.seats.filter(s => s !== 0);
+                    
+                    // Check blocks separated by gaps (like the 4-seat blocks or similar)
+                    // We can group valid seats into continuous blocks
+                    let blocks = [];
+                    let currentBlock = [];
+                    validSeats.forEach((s, idx) => {
+                        currentBlock.push(s);
+                        // If next seat is not adjacent or end of array, push block
+                        if (idx === validSeats.length - 1 || Math.abs(validSeats[idx+1] - s) > 1) {
+                            blocks.push([...currentBlock]);
+                            currentBlock = [];
+                        }
+                    });
+
+                    // For each block, check if the selection falls inside a block of size 3 or 4
+                    for (let block of blocks) {
+                        // Check if our selected seats belong to this block
+                        let blockSelected = nums.filter(n => block.includes(n));
+                        if (blockSelected.length > 0) {
+                            // If block size is 3 or 4, check remaining unbooked & unselected seats in this block
+                            if (block.length === 3 || block.length === 4) {
+                                let remainingInBlock = block.filter(n => !screenSeats[`seat-${rowLabel}-${n}`] && !nums.includes(n));
+                                
+                                // If exactly 1 seat remains unselected/unbooked inside this block, 
+                                // AND that remaining seat is trapped in the MIDDLE (i.e. not at the exact edge of the block), 
+                                // then it's a single middle gap violation!
+                                if (remainingInBlock.length === 1) {
+                                    let isolatedSeat = remainingInBlock[0];
+                                    // Check if isolatedSeat is in the middle of the block (not first and not last element of block)
+                                    let isAtEdge = (isolatedSeat === block[0] || isolatedSeat === block[block.length - 1]);
+                                    if (!isAtEdge) {
+                                        return true; // Violation: leaves a single middle gap!
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         function handleSeatClick(seatId) {
             let screenSeats = getActiveScreenSeats();
             if (screenSeats[seatId]) return;
 
-            const index = selectedSeats.indexOf(seatId);
+            let tempSelected = [...selectedSeats];
+            const index = tempSelected.indexOf(seatId);
             if (index > -1) {
-                selectedSeats.splice(index, 1);
+                tempSelected.splice(index, 1);
             } else {
-                selectedSeats.push(seatId);
+                tempSelected.push(seatId);
             }
+
+            // Test if this selection violates the middle single-gap rule
+            if (checkSingleSeatGapViolation(tempSelected, screenSeats)) {
+                alert("ကျေးဇူးပြု၍ တစ်ခုံတည်း အလယ်ကွက်လပ်ကျန်မည့်ပုံစံဖြင့် ဖြတ်ယူခွင့်မပြုပါ။ (အစွန်မှ ယူပါ သို့မဟုတ် အနားကပ်လျက် ဆက်တိုက်ယူပါ)။");
+                return;
+            }
+
+            selectedSeats = tempSelected;
             updateUI();
         }
 
