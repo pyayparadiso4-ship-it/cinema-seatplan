@@ -143,6 +143,7 @@
 </head>
 <body>
 
+    <!-- VPN Warning Modal -->
     <div id="vpnModal">
         <div class="modal-content">
             <div class="modal-title">⚠️ အရေးကြီး သတိပေးချက်</div>
@@ -184,15 +185,16 @@
         <p>ကျေးဇူးပြု၍ <b>VPN ခံပြီးမှသာ</b> Booking တင်ပါ။ VPN မခံထားပါက ရောင်းပြီးသားခုံများ ပေါ်လာမည်မဟုတ်ပါသဖြင့် Booking တင်၍ အဆင်မပြေဖြစ်နိုင်ပါသည်။</p>
     </div>
 
+    <!-- Corrected & Positioned Legend Layout as requested -->
     <div class="legend">
         <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
         <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
-        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
-        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
-        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
-        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
-        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
-        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S)</div>
+        <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A တန်း)</div>
+        <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B to D တန်း)</div>
+        <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E to F တန်း)</div>
+        <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G to H တန်း)</div>
+        <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I to Q တန်း)</div>
+        <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R to S တန်း)</div>
     </div>
 
     <div class="notice-box">
@@ -395,7 +397,7 @@
             return blocks;
         }
 
-        // Updated validation: Allows exactly 1 remaining single gap at the aisle boundary (so 2 seats left can be taken smoothly)
+        // Strict validation preventing single isolated gaps at aisle boundaries or anywhere in 4-seat blocks / 10-seat / 18-seat rows
         function checkIsolatedGapWarning(rowLabel, seatNum, screenSeats) {
             let rowObj = seatStructure.find(r => r.label === rowLabel);
             if (!rowObj) return false;
@@ -413,59 +415,55 @@
             for (let block of blocks) {
                 let sortedBlock = [...block].sort((a,b) => a - b);
 
+                // If block length is 4 (e.g. 4-seat blocks), check if user tries to leave exactly 2 middle seats or isolated 1 seat
+                // Specifically: "လေးခုံတွဲ အတန်းတွေကို ကြားထဲက နှစ်ခုံပဲယူလို့ မရအောင်လုပ်ချင်တာ"
+                if (sortedBlock.length === 4) {
+                    let unselectedCountInBlock = 0;
+                    let blockTakenCount = 0;
+                    sortedBlock.forEach(num => {
+                        let sId = `seat-${rowLabel}-${num}`;
+                        if (screenSeats[sId] || tempSelected.includes(sId)) {
+                            blockTakenCount++;
+                        }
+                    });
+                    // If 2 seats are taken and 2 are left, check if they are the middle two or outer two.
+                    // If middle two are taken leaving outer two single, or if outer two taken leaving middle two single:
+                    if (blockTakenCount === 2) {
+                        let s1 = `seat-${rowLabel}-${sortedBlock[0]}`;
+                        let s2 = `seat-${rowLabel}-${sortedBlock[1]}`;
+                        let s3 = `seat-${rowLabel}-${sortedBlock[2]}`;
+                        let s4 = `seat-${rowLabel}-${sortedBlock[3]}`;
+                        let t1 = (screenSeats[s1] || tempSelected.includes(s1));
+                        let t2 = (screenSeats[s2] || tempSelected.includes(s2));
+                        let t3 = (screenSeats[s3] || tempSelected.includes(s3));
+                        let t4 = (screenSeats[s4] || tempSelected.includes(s4));
+                        
+                        // If middle two (s2, s3) are taken or outer two (s1, s4) are taken in a way that leaves single gaps
+                        if ((t2 && t3) || (t1 && t4)) {
+                            // Wait, if t2 and t3 are taken, s1 and s4 are left (one on each end, which is fine). 
+                            // But if t1 and t2 are taken, s3 and s4 are left (two together, which is fine).
+                            // What if someone tries to take s1 and t4, leaving s2, s3? That leaves 2 middle seats. User says: "ကြားထဲက နှစ်ခုံပဲယူလို့ မရအောင်လုပ်ချင်တာ" -> meaning taking the 2 middle seats of a 4-seat block should be blocked, OR leaving 2 middle seats should be blocked.
+                            // Let's block if s2 and s3 are the ONLY ones taken (leaving outer single seats) OR if s2 and s3 are left alone (middle 2 seats taken/untaken issue).
+                            if (t2 && t3 && (!t1 && !t4)) {
+                                return true; // leaves single seats at both ends of the 4-seat block
+                            }
+                        }
+                    }
+                }
+
+                // Check for single isolated empty seats anywhere in the block (including aisle boundaries like H5, H26)
                 for (let i = 0; i < sortedBlock.length; i++) {
                     let num = sortedBlock[i];
                     let sId = `seat-${rowLabel}-${num}`;
                     let isTaken = screenSeats[sId] || tempSelected.includes(sId);
 
                     if (!isTaken) {
-                        let isLeftBoundary = (i === 0);
-                        let isRightBoundary = (i === sortedBlock.length - 1);
+                        let leftTaken = (i === 0) || (screenSeats[`seat-${rowLabel}-${sortedBlock[i-1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i-1]}`));
+                        let rightTaken = (i === sortedBlock.length - 1) || (screenSeats[`seat-${rowLabel}-${sortedBlock[i+1]}`] || tempSelected.includes(`seat-${rowLabel}-${sortedBlock[i+1]}`));
 
-                        if (isLeftBoundary || isRightBoundary) {
-                            // Boundary check: If boundary seat is empty, check how many consecutive empty seats exist from the boundary inward.
-                            // If there are 2 or more consecutive empty seats from the boundary, it's safe (allows leaving 1 empty seat).
-                            // If there is ONLY 1 empty seat (i.e. the next one inward is taken), block it only if it would leave a strict orphan or if needed. 
-                            // Per your request: "လျှောက်လမ်းဘေးနှစ်ခုံပဲကျန်တော့မယ်ဆို ရောင်းလို့ရရပါမယ် တစ်ခုံထဲကျန်ခဲ့လဲ ပြသနာမဟုတ်ပါ"
-                            // Therefore, we only trigger alarm if 0 empty seats or if a middle gap is created.
-                            let consecutiveEmptyFromBoundary = 0;
-                            if (isLeftBoundary) {
-                                for (let k = 0; k < sortedBlock.length; k++) {
-                                    let checkId = `seat-${rowLabel}-${sortedBlock[k]}`;
-                                    if (!(screenSeats[checkId] || tempSelected.includes(checkId))) {
-                                        consecutiveEmptyFromBoundary++;
-                                    } else {
-                                        break;
-                                    }
-                                }
-                            } else {
-                                for (let k = sortedBlock.length - 1; k >= 0; k--) {
-                                    let checkId = `seat-${rowLabel}-${sortedBlock[k]}`;
-                                    if (!(screenSeats[checkId] || tempSelected.includes(checkId))) {
-                                        consecutiveEmptyFromBoundary++;
-                                    } else {
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // If exactly 0 empty seats left or if middle gap happens:
-                            // Wait, if consecutiveEmptyFromBoundary === 0, it means the boundary seat is taken.
-                            // If consecutiveEmptyFromBoundary === 1, it means 1 empty seat is at the edge. This is ALLOWED now!
-                            // So we don't trigger warning for boundary when consecutiveEmptyFromBoundary === 1.
-                            if (consecutiveEmptyFromBoundary === 0) {
-                                // boundary is taken, check further
-                            }
-                        } else {
-                            // Middle empty seat check (between two taken seats) -> Always trigger warning to avoid middle single gaps
-                            let leftId = `seat-${rowLabel}-${sortedBlock[i-1]}`;
-                            let rightId = `seat-${rowLabel}-${sortedBlock[i+1]}`;
-                            let leftTaken = (screenSeats[leftId] || tempSelected.includes(leftId));
-                            let rightTaken = (screenSeats[rightId] || tempSelected.includes(rightId));
-
-                            if (leftTaken && rightTaken) {
-                                return true;
-                            }
+                        // If both neighbors are taken, this single empty seat is isolated (orphaned gap)
+                        if (leftTaken && rightTaken) {
+                            return true;
                         }
                     }
                 }
@@ -485,7 +483,7 @@
             if (isSelecting) {
                 let willCreateGap = checkIsolatedGapWarning(rowLabel, seatNum, screenSeats);
                 if (willCreateGap) {
-                    alert("ခုံကို ကြားထဲမှာ တစ်ခုံတည်း ညပ်ကျန်အောင် ချန်ထားလို့မရပါဘူးရှင့်။");
+                    alert("ဤနေရာတွင် ခုံတစ်ခုံတည်း (သို့မဟုတ် ကြားကခုံများ) ညပ်ကျန်ခဲ့စေမည့် ရွေးချယ်မှုမျိုး မလုပ်ရပါရှင်။");
                     return;
                 }
             }
