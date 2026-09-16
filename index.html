@@ -26,14 +26,12 @@
         .modal-title { font-size: 16px; font-weight: bold; color: #ff3333; margin-bottom: 12px; }
         .checking-text { color: #ffeb3b; font-size: 13px; font-weight: bold; margin-bottom: 12px; }
         
-        /* မေတ္တာရပ်ခံချက် စာသား ဒီဇိုင်း */
         .modal-text { 
             font-size: 13px; line-height: 1.6; color: #ffeb3b; margin-bottom: 20px; 
             text-align: left; background: #2a2200; border: 1px dashed #ffeb3b; 
             padding: 12px; border-radius: 6px; 
         }
         
-        /* Oki ခလုတ် (Timer ပြီးမှ ပေါ်လာမည်) */
         .modal-btn {
             background-color: #333; color: #888; border: none; padding: 10px 25px;
             font-size: 14px; font-weight: bold; border-radius: 6px; cursor: not-allowed;
@@ -122,10 +120,22 @@
         .selected-info { font-size: 14px; margin-bottom: 10px; color: #fff; }
         .selected-info b { color: #00ff66; }
         
+        /* Customer Info Inputs */
+        .customer-form {
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
+            text-align: left; max-width: 350px; margin-left: auto; margin-right: auto;
+        }
+        .customer-form label { font-size: 12px; color: #ffeb3b; font-weight: bold; }
+        .customer-input {
+            background: #2a2a2a; border: 1px solid #555; color: #fff; padding: 8px 10px;
+            border-radius: 5px; font-size: 13px; width: 100%;
+        }
+        .customer-input:focus { border-color: #00ff66; outline: none; }
+
         .viber-btn {
             background-color: #7360f2; color: white; border: none; padding: 12px 25px;
             font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(115, 96, 242, 0.4); transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(115, 96, 242, 0.4); transition: background 0.2s; width: 100%; max-width: 350px;
         }
         .viber-btn:hover { background-color: #5c47e0; }
         .viber-btn:disabled { background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; }
@@ -174,6 +184,18 @@
     <div class="booking-panel">
         <div class="selected-info" id="selectedInfoText">ရွေးချယ်ထားသော ခုံများ: <b id="selectedSeatsListText">မရှိသေးပါ</b></div>
         <div class="selected-info" id="totalAmountText" style="margin-top: 5px;">စုစုပေါင်း ကျသင့်ငွေ: <b id="totalAmountVal">0 ကျပ်</b></div>
+        
+        <div class="customer-form">
+            <div>
+                <label>👤 ဝယ်ယူသူအမည် (Name):</label>
+                <input type="text" id="customerName" class="customer-input" placeholder="သင့်နာမည်ထည့်ပါ">
+            </div>
+            <div>
+                <label>📞 ဖုန်းနံပါတ် (Phone Number):</label>
+                <input type="tel" id="customerPhone" class="customer-input" placeholder="ဖုန်းနံပါတ်ထည့်ပါ">
+            </div>
+        </div>
+
         <button class="viber-btn" id="viberConfirmBtn" onclick="sendToViber()" disabled>Viber ဖြင့် ချက်ချင်း Booking တင်မည်</button>
     </div>
 
@@ -190,7 +212,7 @@
 
     <div class="notice-box">
         <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
-        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ ရွေးချယ်ပါ။ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက မှာယူထားသော ခုံများနှင့် ကျသင့်ငွေ Total Amount စာသားများ Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
+        <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ရွေးပါ၊ နာမည်နှင့် ဖုန်းနံပါတ်ဖြည့်ပါ၊ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက အချက်အလက်များ အကုန် Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
     </div>
 
     <script>
@@ -214,7 +236,6 @@
                     modalTitleEl.innerHTML = "🚨 မေတ္တာရပ်ခံချက် 🚨";
                     modalNoticeTextEl.innerText = "ခုံရွေးသည့်အခါ-မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်( မသိတာရှီပါက 09457143360 တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)";
                     
-                    // ၅ စက္ကန့် တိုင်င်မ်မာ စတင်ရန်
                     let timeLeft = 5;
                     let timerInterval = setInterval(() => {
                         timeLeft--;
@@ -433,6 +454,14 @@
         function sendToViber() {
             if (selectedSeats.length === 0) return;
 
+            let name = document.getElementById('customerName').value.trim();
+            let phone = document.getElementById('customerPhone').value.trim();
+
+            if (!name || !phone) {
+                alert("ကျေးဇူးပြု၍ သင့်နာမည်နှင့် ဖုန်းနံပါတ်ကို ထည့်သွင်းပေးပါခင်ဗျာ။");
+                return;
+            }
+
             let screenIndex = parseInt(currentScreenId.replace('screen_', '')) - 1;
             let dIndex = Math.floor(screenIndex / 4);
             let tIndex = screenIndex % 4;
@@ -444,10 +473,10 @@
             let formattedSeats = selectedSeats.map(s => s.replace('seat-', '').replace('-', '')).join(', ');
             let totalPrice = calculateTotalPrice().toLocaleString() + ' ကျပ်';
 
-            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက် ခုံနံပါတ် (${formattedSeats}) - စုစုပေါင်းကျသင့်ငွေ: ${totalPrice} ကို Booking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
+            let message = `မင်္ဂလာပါ၊ Paradiso Pyay Cinema မှ '${movieName}' (${dateText}, ${timeText}) အတွက်\nဝယ်ယူသူအမည်: ${name}\nဖုန်းနံပါတ်: ${phone}\nရွေးချယ်ထားသောခုံ: (${formattedSeats})\nစုစုပေါင်းကျသင့်ငွေ: ${totalPrice}\nBooking တင်ပြီး ငွေချေလိုပါတယ်ခင်ဗျာ။`;
 
             navigator.clipboard.writeText(message).then(() => {
-                alert("ခုံနံပါတ်များနှင့် ကျသင့်ငွေ (Total Amount) ကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
+                alert("အချက်အလက်များအားလုံးကို Copy ကူးပြီးပါပြီ။ Viber Chat ထဲရောက်လျှင် စာရိုက်သည့်နေရာကို ဖိပြီး Paste (ကပ်) နှိပ်ပေးပါ။");
                 window.location.href = `viber://chat?number=%2B959457143360`;
             }).catch(err => {
                 window.location.href = `viber://chat?number=%2B959457143360`;
