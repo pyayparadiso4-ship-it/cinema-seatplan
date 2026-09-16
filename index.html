@@ -1,45 +1,69 @@
-<!DOCTYPE html>
-<html lang="my">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paradiso Pyay Cinema - Customer Booking</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+// --- 4-Seat Blocks Validation Logic ---
+function checkSingleSeatGapViolation(tempSelected, screenSeats) {
+    let rowsMap = {};
+    tempSelected.forEach(seatId => {
+        let parts = seatId.replace('seat-', '').split('-');
+        let rowLabel = parts[0];
+        let num = parseInt(parts[1]);
+        if (!rowsMap[rowLabel]) rowsMap[rowLabel] = [];
+        rowsMap[rowLabel].push(num);
+    });
 
-    <style>
-        * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
-        body { background: #121212; color: #fff; padding: 15px; margin: 0; }
+    for (let rowLabel in rowsMap) {
+        let nums = rowsMap[rowLabel].sort((a, b) => a - b);
+        let count = nums.length;
 
-        /* VPN Modal Popup Overlay */
-        #vpnModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center;
-            align-items: center; z-index: 9999; padding: 20px;
-        }
-        .modal-content {
-            background: #1e1e1e; border: 2px solid #ffeb3b; border-radius: 10px;
-            max-width: 400px; width: 100%; padding: 20px; text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
-        }
-        .modal-title { font-size: 16px; font-weight: bold; color: #ffeb3b; margin-bottom: 15px; }
-        .modal-text { font-size: 13px; line-height: 1.6; color: #ddd; margin-bottom: 20px; text-align: left; }
-        .modal-btn {
-            background-color: #444; color: #888; border: none; padding: 10px 25px;
-            font-size: 14px; font-weight: bold; border-radius: 5px; cursor: not-allowed;
-            transition: all 0.3s ease; width: 100%;
-        }
-        .modal-btn.active {
-            background-color: #00ff66; color: #000; cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,255,102,0.4);
-        }
-        .modal-btn.active:hover { background-color: #00cc52; }
+        // ၄ ခုံ သို့မဟုတ် ၃ ခုံ ယူလျှင် လုံးဝ ခွင့်ပြုသည်
+        if (count >= 3) continue;
 
-        .screens-nav-container {
-            background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 15px;
-            border: 1px solid #333; width: 100%;
-        }
-        .screens-nav-title { font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-align: center; }
+        let rowConfig = seatStructure.find(r => r.label === rowLabel);
+        if (!rowConfig) continue;
+
+        let validSeats = rowConfig.seats.filter(s => s !== 0);
         
-        .
+        // Split row into continuous blocks (specifically checking 4-seat blocks or others)
+        let blocks = [];
+        let currentBlock = [];
+        validSeats.forEach((s, idx) => {
+            currentBlock.push(s);
+            if (idx === validSeats.length - 1 || Math.abs(validSeats[idx+1] - s) > 1) {
+                blocks.push([...currentBlock]);
+                currentBlock = [];
+            }
+        });
+
+        // Check each block (focusing on 4-seat blocks)
+        for (let block of blocks) {
+            // We specifically target 4-seat blocks as requested
+            if (block.length === 4) {
+                let selectedInBlock = nums.filter(n => block.includes(n));
+                if (selectedInBlock.length > 0) {
+                    let isSeatTaken = (n) => screenSeats[`seat-${rowLabel}-${n}`] || nums.includes(n);
+
+                    // Check for isolated single empty gaps in the middle of this 4-seat block
+                    for (let i = 0; i < block.length; i++) {
+                        let targetSeat = block[i];
+                        
+                        // If targetSeat is empty
+                        if (!isSeatTaken(targetSeat)) {
+                            let leftNeighbor = (i > 0) ? block[i - 1] : null;
+                            let rightNeighbor = (i < block.length - 1) ? block[i + 1] : null;
+
+                            let leftIsBlocked = leftNeighbor === null || isSeatTaken(leftNeighbor);
+                            let rightIsBlocked = rightNeighbor === null || isSeatTaken(rightNeighbor);
+
+                            // If both sides are blocked and it's a middle seat (not the absolute outer edges of the 4-seat block)
+                            if (leftIsBlocked && rightIsBlocked) {
+                                let isAtBlockEdge = (targetSeat === block[0] || targetSeat === block[block.length - 1]);
+                                if (!isAtBlockEdge) {
+                                    return true; // Violation: Middle single gap in 4-seat block!
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
