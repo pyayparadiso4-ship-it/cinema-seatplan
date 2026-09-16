@@ -74,7 +74,6 @@
         }
         .save-settings-btn:hover { background: #1b5e20; }
 
-        /* ရက်စွဲနှင့် ပွဲချိန်များကို 2x2 Grid ပုံစံဖြင့်ပြသရန် (Admin Nav) */
         .screens-nav {
             background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 12px;
             display: flex; flex-direction: column; gap: 12px; width: 100%;
@@ -83,9 +82,16 @@
             background: #222; border: 1px solid #444; border-radius: 6px; padding: 8px;
         }
         .date-header {
-            font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px; text-align: center;
+            font-size: 12px; font-weight: bold; color: #64b5f6; margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #333; padding-bottom: 4px;
         }
+        .date-reset-btn {
+            background: #b71c1c; color: #fff; border: none; padding: 2px 8px;
+            border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;
+        }
+        .date-reset-btn:hover { background: #d32f2f; }
+
         .times-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
         }
@@ -104,22 +110,11 @@
         .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
         
         .top-summary-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #252525;
-            border: 1px solid #444;
-            padding: 10px 15px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: #252525; border: 1px solid #444; padding: 10px 15px;
+            border-radius: 6px; margin-bottom: 12px; font-size: 12px;
         }
-        .top-summary-item {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
+        .top-summary-item { text-align: center; display: flex; flex-direction: column; gap: 2px; }
 
         .movie-display-header {
             text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
@@ -130,37 +125,16 @@
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
-        .seat-map-main-layout {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-
-        .seat-rows-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .seat-map-main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .seat-rows-area { flex-grow: 1; display: flex; flex-direction: column; }
 
         .tier-summary-sidebar {
-            width: 200px;
-            min-width: 200px;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 15px;
+            width: 200px; min-width: 200px; display: flex; flex-direction: column; position: sticky; top: 15px;
         }
 
         .tier-box {
-            background: #252525;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 8px 10px;
-            text-align: left;
-            font-size: 11px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            background: #252525; border: 1px solid #444; border-radius: 6px; padding: 8px 10px;
+            text-align: left; font-size: 11px; display: flex; flex-direction: column; justify-content: center;
         }
 
         .tier-box-title { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
@@ -174,11 +148,7 @@
         #box-20000 { height: 79px; margin-bottom: 10px; border-left: 4px solid #B97034; }
 
         .grand-total-box {
-            background: #1c2e1c;
-            border: 1px solid #2e7d32;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
+            background: #1c2e1c; border: 1px solid #2e7d32; border-radius: 6px; padding: 10px; text-align: center;
         }
 
         .seat-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; position: relative; height: 32px; }
@@ -216,7 +186,7 @@
         <button class="color-btn" style="background:#ffcc00; color:#000;" onclick="selectColor('yellow', this)">အဝါ</button>
         <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
         
-        <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Screen (3 Clicks)</button>
+        <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Current Screen (3 Clicks)</button>
     </div>
 
     <div class="settings-panel">
@@ -333,7 +303,6 @@
     </div>
 
     <script>
-        // စကားဝှက် စစ်ဆေးခြင်း ( sessionStorage ကို အသုံးပြုထားပါသည် )
         if (sessionStorage.getItem("admin_authenticated") !== "true") {
             const adminPassword = prompt("Admin စကားဝှက် ထည့်ပါ:");
             if (adminPassword !== "801121") {
@@ -471,6 +440,43 @@
             });
         }
 
+        let dateResetClicks = {};
+        let dateResetTimers = {};
+
+        function handleDateResetClick(dayIndex, btnEl, dateStr) {
+            if (!dateResetClicks[dayIndex]) dateResetClicks[dayIndex] = 0;
+            dateResetClicks[dayIndex]++;
+            const remaining = 3 - dateResetClicks[dayIndex];
+
+            if (dateResetClicks[dayIndex] < 3) {
+                btnEl.innerText = `Click ${remaining} More`;
+                clearTimeout(dateResetTimers[dayIndex]);
+                dateResetTimers[dayIndex] = setTimeout(() => {
+                    dateResetClicks[dayIndex] = 0;
+                    btnEl.innerText = 'Reset Day';
+                }, 2000);
+            } else {
+                clearTimeout(dateResetTimers[dayIndex]);
+                
+                // ထိုရက်စွဲအောက်ရှိ Screen ၄ ခုကို တွက်ချက်ပြီး ရှင်းလင်းမည် (ဥပမာ Day 1 ဆိုရင် screen_1 မှ screen_4 ထိ)
+                let startScreen = (dayIndex * 4) + 1;
+                let endScreen = startScreen + 3;
+
+                if (!globalData.screens) globalData.screens = {};
+                for (let s = startScreen; s <= endScreen; s++) {
+                    globalData.screens[`screen_${s}`] = {};
+                }
+
+                database.ref('paradiso_cinema').set(globalData);
+
+                dateResetClicks[dayIndex] = 0;
+                btnEl.innerText = 'Cleared!';
+                setTimeout(() => {
+                    btnEl.innerText = 'Reset Day';
+                }, 1500);
+            }
+        }
+
         function buildScreensNav() {
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
@@ -483,13 +489,25 @@
             for (let d = 0; d < 3; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
                 
-                // ရက်စွဲတစ်ခုချင်းစီအတွက် Container ဆောက်သည်
                 const dateGroup = document.createElement('div');
                 dateGroup.className = 'date-group';
 
                 const dateHeader = document.createElement('div');
                 dateHeader.className = 'date-header';
-                dateHeader.innerText = `📅 ${dateStr}`;
+                
+                let titleSpan = document.createElement('span');
+                titleSpan.innerText = `📅 ${dateStr}`;
+                dateHeader.appendChild(titleSpan);
+
+                let dateResetBtn = document.createElement('button');
+                dateResetBtn.className = 'date-reset-btn';
+                dateResetBtn.innerText = 'Reset Day';
+                dateResetBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    handleDateResetClick(d, dateResetBtn, dateStr);
+                };
+                dateHeader.appendChild(dateResetBtn);
+
                 dateGroup.appendChild(dateHeader);
 
                 const timesGrid = document.createElement('div');
@@ -663,7 +681,7 @@
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => {
                     resetClickCount = 0;
-                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
+                    resetBtn.innerText = 'Reset Current Screen (3 Clicks)';
                 }, 2000);
             } else {
                 clearTimeout(resetTimer);
@@ -675,7 +693,7 @@
                 resetClickCount = 0;
                 resetBtn.innerText = 'Cleared!';
                 setTimeout(() => {
-                    resetBtn.innerText = 'Reset Screen (3 Clicks)';
+                    resetBtn.innerText = 'Reset Current Screen (3 Clicks)';
                 }, 1500);
             }
         }
