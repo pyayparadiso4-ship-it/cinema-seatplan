@@ -122,9 +122,10 @@
         .seat:hover { transform: scale(1.1); }
         .empty { width: 25px; min-width: 25px; height: 30px; }
         
-        /* Entrance box styling for I, J, K, L rows */
+        /* Entrance box styling (width 125px as requested) */
         .entrance-box {
-            width: 117px; /* 4 seats width (28*4 + gap*3) */
+            width: 125px;
+            min-width: 125px;
             height: 30px;
             background: #2a2a2a;
             border: 2px dashed #ffeb3b;
@@ -264,7 +265,7 @@
         <div class="legend">
             <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> ရောင်းပြီး (Admin)</div>
             <div class="legend-item"><div class="legend-box" style="background:#00ff66;"></div> ကိုယ်ရွေးထားသောခုံ</div>
-            <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
+            <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A1)</div>
             <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
             <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
             <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
@@ -273,7 +274,7 @@
         </div>
 
         <div class="notice-box">
-            <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
+            <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)。<br><br>
             <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ရွေးပါ၊ နာမည်နှင့် ဖုန်းနံပါတ်ဖြည့်ပါ၊ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက အချက်အလက်များ အကုန် Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
         </div>
     </div>
@@ -351,10 +352,10 @@
             { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { type: 'gap' },
-            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 'entrance', 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 'entrance', 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 'entrance', 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 'entrance', 10,9,8,7,6,5,4,3,2,1] },
             { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
