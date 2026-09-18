@@ -114,17 +114,15 @@
         .row-label { width: 30px; min-width: 30px; line-height: 28px; text-align: center; font-weight: bold; color: #fff; font-size: 13px; margin-left: 8px; }
         
         .seat {
-            width: 28px; height: 30px; min-width: 28px; border-radius: 3px; font-size: 10px;
+            width: 28px; height: 30px; min-width: 28px; border-radius: 3px; font-size: 11px;
             display: inline-flex; align-items: center; justify-content: center;
             user-select: none; color: #000; font-weight: bold; cursor: pointer;
             transition: transform 0.1s;
-            flex-direction: column;
-            line-height: 1.1;
         }
         .seat:hover { transform: scale(1.1); }
         .empty { width: 25px; min-width: 25px; height: 30px; }
         
-        /* Entrance box styling for I, J, K rows */
+        /* Entrance box styling for I, J, K, L rows */
         .entrance-box {
             width: 117px; /* 4 seats width (28*4 + gap*3) */
             height: 30px;
@@ -147,10 +145,6 @@
             min-width: 58px;
             height: 34px;
             font-size: 11px;
-            flex-direction: column;
-            line-height: 1.1;
-            justify-content: center;
-            padding-top: 2px;
         }
 
         .price-4000 { background-color: #777670; color: #fff; }
@@ -279,7 +273,7 @@
         </div>
 
         <div class="notice-box">
-            <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)。<br><br>
+            <b>ခုံရွေးသည့်အခါ-</b> မိမိရွေးချယ်မည့်ဈေးတန်းမှာ တစ်ခုံထဲကွက်မကျန်အောင် အလယ်တည့်တည့်ကဖြစ်စေ၊ လျောက်လမ်းဘေးနှစ်ခုံကစ၍ဖြစ်စေ၊ ရောင်းပြီးသားခုံရဲ့ဘေးကစဖြစ်စေ စယူပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည် (မသိတာရှိပါက <b>09457143360</b> တွင် Viber ကဖြစ်စေ ဖုန်းခေါ်၍ဖြစ်စေ မေးမြန်းနိုင်ပါသည်)။<br><br>
             <b>လမ်းညွှန်ချက် -</b> မိမိထိုင်လိုသော ခုံများကို ကလစ်နှိပ်၍ရွေးပါ၊ နာမည်နှင့် ဖုန်းနံပါတ်ဖြည့်ပါ၊ <b>"Viber ဖြင့် ချက်ချင်း Booking တင်မည်"</b> ကို နှိပ်ပါက အချက်အလက်များ အကုန် Copy ကူးပြီး Viber သို့ ခေါ်ဆောင်သွားပါမည်။
         </div>
     </div>
@@ -360,7 +354,7 @@
             { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0, 'entrance', 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
@@ -602,9 +596,9 @@
                         seatBtn.className = `seat ${row.class}`;
                         
                         if (row.label === 'R' || row.label === 'S') {
-                            seatBtn.innerHTML = `👥<br>${row.label}${item}`;
+                            seatBtn.innerHTML = `👥${row.label}${item}`;
                         } else {
-                            seatBtn.innerHTML = `${row.label}<br>${item}`;
+                            seatBtn.innerHTML = `${row.label}${item}`;
                         }
                         
                         seatBtn.onclick = () => handleSeatClick(seatId);
