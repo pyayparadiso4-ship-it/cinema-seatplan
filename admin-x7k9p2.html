@@ -705,6 +705,16 @@
                     seatBtn.className = `seat ${row.class}`;
                     seatBtn.innerText = num;
                     
+                    // ခုံကို နှစ်ချက်ဆက်တိုက်နှိပ်လျှင် (Double Click) အရောင်ပြန်ဖျက်ရန်
+                    seatBtn.ondblclick = () => {
+                        let screenSeats = getActiveScreenSeats();
+                        if (screenSeats[seatId]) {
+                            delete screenSeats[seatId];
+                            database.ref('paradiso_cinema').set(globalData);
+                        }
+                    };
+
+                    // တစ်ချက်နှိပ်လျှင် ရွေးထားသောအရောင် တင်ရန်
                     seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
                             alert('ကျေးဇူးပြု၍ အပေါ်ဘက်မှ အနီ/အဝါ/ခရမ်း ရောင်တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
@@ -712,12 +722,6 @@
                         }
                         let screenSeats = getActiveScreenSeats();
                         screenSeats[seatId] = selectedAdminColor;
-                        database.ref('paradiso_cinema').set(globalData);
-                    };
-
-                    seatBtn.ondblclick = () => {
-                        let screenSeats = getActiveScreenSeats();
-                        delete screenSeats[seatId];
                         database.ref('paradiso_cinema').set(globalData);
                     };
 
