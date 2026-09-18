@@ -120,14 +120,6 @@
             transition: transform 0.1s;
         }
         .seat:hover { transform: scale(1.1); }
-        
-        /* နှစ်ယောက်ထိုင်ခုံ (Couple Seats) - အကျယ်ကို 52px သို့ တိုးပေးပြီး စာသားမလွတ်သွားအောင် စီစဉ်ထားသည် */
-        .seat.price-20000 {
-            width: 52px; min-width: 52px; font-size: 9.5px; flex-direction: row; justify-content: center; align-items: center; gap: 1px;
-            background-color: #B97034; color: #fff; padding: 0 2px;
-        }
-        .couple-icon { font-size: 9px; line-height: 1; }
-
         .empty { width: 25px; min-width: 25px; height: 30px; }
         
         .price-4000 { background-color: #777670; color: #fff; }
@@ -135,6 +127,7 @@
         .price-6000 { background-color: #FABF8F; }
         .price-7000 { background-color: #4BACC6; }
         .price-8000 { background-color: #CCC0D9; }
+        .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; cursor: not-allowed !important; pointer-events: none; }
         .customer-selected { background-color: #00ff66 !important; color: #000 !important; box-shadow: 0 0 8px #00ff66; }
@@ -251,7 +244,7 @@
             <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
             <div class="legend-item"><div class="legend-box price-7000"></div> 7,000 (G-H)</div>
             <div class="legend-item"><div class="legend-box price-8000"></div> 8,000 (I-Q)</div>
-            <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S) - နှစ်ယောက်ခုံ</div>
+            <div class="legend-item"><div class="legend-box price-20000"></div> 20,000 (R-S) (နှစ်ယောက်ခုံ)</div>
         </div>
 
         <div class="notice-box">
@@ -343,8 +336,8 @@
             { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
             { type: 'gap' },
-            { label: 'R', price: 20000, class: 'price-20000', isCouple: true, seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
-            { label: 'S', price: 20000, class: 'price-20000', isCouple: true, seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
         ];
 
         let globalData = {
@@ -571,12 +564,7 @@
                         const seatId = 'seat-' + row.label + '-' + num;
                         seatBtn.id = seatId;
                         seatBtn.className = `seat ${row.class}`;
-                        
-                        if (row.isCouple) {
-                            seatBtn.innerHTML = `<span class="couple-icon">👥</span><span>${row.label}${num}</span>`;
-                        } else {
-                            seatBtn.innerText = num;
-                        }
+                        seatBtn.innerText = num;
                         
                         seatBtn.onclick = () => handleSeatClick(seatId);
                         rowDiv.appendChild(seatBtn);
