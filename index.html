@@ -60,10 +60,14 @@
         .date-group {
             background: #252525; border: 1px solid #444; border-radius: 6px; padding: 10px;
         }
+        .date-group.blocked-date-group { opacity: 0.5; border-color: #d32f2f; }
+        
         .date-header {
             font-size: 13px; font-weight: bold; color: #64b5f6; margin-bottom: 8px; text-align: center;
             border-bottom: 1px solid #333; padding-bottom: 6px;
         }
+        .date-header.blocked-date-header { color: #ff5252; }
+
         .times-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
         .screen-tab {
@@ -73,6 +77,7 @@
         }
         .screen-tab:hover { background: #444; color: #fff; }
         .screen-tab.active { background: #ffeb3b; color: #000; border-color: #ffeb3b; box-shadow: 0 0 10px rgba(255,235,59,0.5); }
+        .screen-tab.blocked-tab { background: #3b1c1c; color: #888; border-color: #552222; cursor: not-allowed; }
 
         .proceed-btn {
             background-color: #00ff66; color: #000; border: none; padding: 14px;
@@ -368,7 +373,8 @@
 
         let globalData = {
             settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
-            screens: {}
+            screens: {},
+            blockedDays: {}
         };
         let currentScreenId = null;
         let selectedSeats = [];
@@ -381,7 +387,8 @@
                 } else {
                     globalData = {
                         settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
-                        screens: {}
+                        screens: {},
+                        blockedDays: {}
                     };
                 }
                 buildScreensNav();
@@ -398,17 +405,19 @@
             const dates = globalData.settings?.dates || ["", "", "", "", "", "", ""];
             const times = globalData.settings?.times || ["", "", "", ""];
             const movies = globalData.settings?.movies || {};
+            const blockedDays = globalData.blockedDays || {};
 
             let count = 1;
             for (let d = 0; d < 7; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                let isBlocked = blockedDays[`day_${d}`];
                 
                 const dateGroup = document.createElement('div');
-                dateGroup.className = 'date-group';
+                dateGroup.className = `date-group ${isBlocked ? 'blocked-date-group' : ''}`;
 
                 const dateHeader = document.createElement('div');
-                dateHeader.className = 'date-header';
-                dateHeader.innerText = `📅 ${dateStr}`;
+                dateHeader.className = `date-header ${isBlocked ? 'blocked-date-header' : ''}`;
+                dateHeader.innerText = `📅 ${dateStr}` + (isBlocked ? ' (ပြီးခဲ့တဲ့ရက်)' : '');
                 dateGroup.appendChild(dateHeader);
 
                 const timesGrid = document.createElement('div');
@@ -420,15 +429,23 @@
                     let movieShort = movies[sId] ? ` (${movies[sId]})` : '';
                     
                     const btn = document.createElement('button');
-                    btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
-                    btn.innerText = `${timeStr}${movieShort}`;
                     
-                    let capturedId = sId;
-                    btn.onclick = () => {
-                        currentScreenId = capturedId;
-                        buildScreensNav();
-                        document.getElementById('proceedSeatBtn').disabled = false;
-                    };
+                    if (isBlocked) {
+                        btn.className = 'screen-tab blocked-tab';
+                        btn.innerText = `${timeStr} (ပိတ်ထားသည်)`;
+                        btn.disabled = true;
+                    } else {
+                        btn.className = `screen-tab ${sId === currentScreenId ? 'active' : ''}`;
+                        btn.innerText = `${timeStr}${movieShort}`;
+                        
+                        let capturedId = sId;
+                        btn.onclick = () => {
+                            currentScreenId = capturedId;
+                            buildScreensNav();
+                            document.getElementById('proceedSeatBtn').disabled = false;
+                        };
+                    }
+
                     timesGrid.appendChild(btn);
                     count++;
                 }
