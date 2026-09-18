@@ -107,7 +107,7 @@
             width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1150px; width: 100%; }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
         
         .top-summary-bar {
             display: flex; justify-content: space-between; align-items: center;
@@ -161,21 +161,18 @@
         }
         .seat:hover { transform: scale(1.15); z-index: 10; }
         .empty { width: 25px; min-width: 25px; height: 30px; }
-        
-        /* Entrance စတိုင်လ် */
-        .entrance-box {
-            width: 55px; min-width: 55px; height: 30px; border-radius: 3px; font-size: 10px;
-            display: inline-flex; align-items: center; justify-content: center;
-            background-color: #333; color: #aaa; border: 1px dashed #666; font-weight: bold;
-            user-select: none;
+        .entrance-label {
+            width: 60px; min-width: 60px; height: 30px; font-size: 9px; color: #64b5f6;
+            background: #252525; border: 1px dashed #64b5f6; border-radius: 3px;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: bold;
         }
-
+        
         .price-4000 { background-color: #777670; color: #fff; }
         .price-5000 { background-color: #9BBB59; }
         .price-6000 { background-color: #FABF8F; }
         .price-7000 { background-color: #4BACC6; }
         .price-8000 { background-color: #CCC0D9; }
-        .price-20000 { background-color: #B97034; color: #fff; width: 125px !important; min-width: 125px !important; }
+        .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
         .admin-yellow { background-color: #ffcc00 !important; color: black !important; }
@@ -639,14 +636,14 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
-            row.seats.forEach(item => {
+            row.seats.forEach((item, index) => {
                 if (item === 0) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'empty';
                     rowDiv.appendChild(emptyDiv);
                 } else if (item === 'entrance') {
                     const entranceDiv = document.createElement('div');
-                    entranceDiv.className = 'entrance-box';
+                    entranceDiv.className = 'entrance-label';
                     entranceDiv.innerText = 'Entrance';
                     rowDiv.appendChild(entranceDiv);
                 } else {
