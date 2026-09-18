@@ -107,7 +107,7 @@
             width: 100%; overflow-x: auto; background: #1e1e1e; padding: 15px;
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
+        .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1120px; width: 100%; }
         
         .top-summary-bar {
             display: flex; justify-content: space-between; align-items: center;
@@ -161,6 +161,32 @@
         }
         .seat:hover { transform: scale(1.15); z-index: 10; }
         .empty { width: 25px; min-width: 25px; height: 30px; }
+
+        /* Entrance box styling */
+        .entrance-box {
+            width: 126px;
+            min-width: 126px;
+            height: 30px;
+            background: #2a2a2a;
+            border: 2px dashed #ffeb3b;
+            color: #ffeb3b;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Couple seat styling (R and S rows) */
+        .seat.price-20000 {
+            width: 58px;
+            min-width: 58px;
+            height: 34px;
+            font-size: 11px;
+        }
         
         .price-4000 { background-color: #777670; color: #fff; }
         .price-5000 { background-color: #9BBB59; }
@@ -341,18 +367,18 @@
             { label: 'G', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { label: 'H', price: 7000, class: 'price-7000', seats: [26,25,24,23, 0, 22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5, 0, 4,3,2,1] },
             { type: 'gap' },
-            { label: 'I', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'J', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'K', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'L', price: 8000, class: 'price-8000', seats: [20,19,18,17,16,15,14,13,12,11, 0,0,0,0,0,0,0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'M', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'N', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'O', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'P', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
-            { label: 'Q', price: 8000, class: 'price-8000', seats: [24,23,22,21,20,19,18,17,16,15, 0,0, 14,13,12,11, 0,0, 10,9,8,7,6,5,4,3,2,1] },
+            { label: 'I', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 'entrance', 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'J', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 'entrance', 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'K', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 'entrance', 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'L', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 'entrance', 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'M', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 14,13,12,11, 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'N', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 14,13,12,11, 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'O', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 14,13,12,11, 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'P', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 14,13,12,11, 0, 10,9,8,7,6,5,4,3,2,1, 0] },
+            { label: 'Q', price: 8000, class: 'price-8000', seats: [0, 24,23,22,21,20,19,18,17,16,15, 0, 14,13,12,11, 0, 10,9,8,7,6,5,4,3,2,1, 0] },
             { type: 'gap' },
-            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
-            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
+            { label: 'R', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] },
+            { label: 'S', price: 20000, class: 'price-20000', seats: [10,9,8,7,6, 0,0,0,0,0,0,0,0,0,0, 5,4,3,2,1] }
         ];
 
         let selectedAdminColor = null;
@@ -631,17 +657,27 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
 
-            row.seats.forEach(num => {
-                if (num === 0) {
+            row.seats.forEach(item => {
+                if (item === 0) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'empty';
                     rowDiv.appendChild(emptyDiv);
+                } else if (item === 'entrance') {
+                    const entranceDiv = document.createElement('div');
+                    entranceDiv.className = 'entrance-box';
+                    entranceDiv.innerText = 'Entrance';
+                    rowDiv.appendChild(entranceDiv);
                 } else {
                     const seatBtn = document.createElement('div');
-                    const seatId = 'seat-' + row.label + '-' + num;
+                    const seatId = 'seat-' + row.label + '-' + item;
                     seatBtn.id = seatId;
                     seatBtn.className = `seat ${row.class}`;
-                    seatBtn.innerText = num;
+                    
+                    if (row.label === 'R' || row.label === 'S') {
+                        seatBtn.innerHTML = `👥${row.label}${item}`;
+                    } else {
+                        seatBtn.innerHTML = `${row.label}${item}`;
+                    }
                     
                     seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
