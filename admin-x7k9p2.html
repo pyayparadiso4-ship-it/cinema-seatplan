@@ -86,11 +86,19 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #333; padding-bottom: 4px;
         }
+        .date-actions { display: flex; gap: 6px; align-items: center; }
         .date-reset-btn {
             background: #b71c1c; color: #fff; border: none; padding: 2px 8px;
             border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;
         }
         .date-reset-btn:hover { background: #d32f2f; }
+
+        .date-block-btn {
+            background: #444; color: #fff; border: none; padding: 2px 8px;
+            border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;
+        }
+        .date-block-btn.blocked { background: #d32f2f; color: #fff; }
+        .date-block-btn:hover { opacity: 0.8; }
 
         .times-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
@@ -162,7 +170,6 @@
         .seat:hover { transform: scale(1.15); z-index: 10; }
         .empty { width: 25px; min-width: 25px; height: 30px; }
         
-        /* R နှင့် S တန်းအတွက် သီးသန့် အကျယ် 50px သတ်မှတ်ချက် */
         .seat.price-20000 { width: 50px; min-width: 50px; }
         .empty.space-20000 { width: 50px; min-width: 50px; }
 
@@ -362,7 +369,8 @@
         let selectedAdminColor = null;
         let globalData = {
             settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
-            screens: {}
+            screens: {},
+            blockedDays: {}
         };
         let currentScreenId = 'screen_1';
 
@@ -387,7 +395,8 @@
                 } else {
                     globalData = {
                         settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
-                        screens: {}
+                        screens: {},
+                        blockedDays: {}
                     };
                 }
                 initSettingsUI();
@@ -484,6 +493,40 @@
             }
         }
 
+        let dateBlockClicks = {};
+        let dateBlockTimers = {};
+
+        function handleDateBlockClick(dayIndex, btnEl) {
+            if (!dateBlockClicks[dayIndex]) dateBlockClicks[dayIndex] = 0;
+            dateBlockClicks[dayIndex]++;
+            const remaining = 2 - dateBlockClicks[dayIndex];
+
+            if (dateBlockClicks[dayIndex] < 2) {
+                btnEl.innerText = `Click ${remaining} More`;
+                clearTimeout(dateBlockTimers[dayIndex]);
+                dateBlockTimers[dayIndex] = setTimeout(() => {
+                    dateBlockClicks[dayIndex] = 0;
+                    let isCurrentlyBlocked = globalData.blockedDays && globalData.blockedDays[`day_${dayIndex}`];
+                    btnEl.innerText = isCurrentlyBlocked ? 'Unblock Day' : 'Block Day';
+                }, 2000);
+            } else {
+                clearTimeout(dateBlockTimers[dayIndex]);
+                
+                if (!globalData.blockedDays) globalData.blockedDays = {};
+                let dayKey = `day_${dayIndex}`;
+                let currentlyBlocked = globalData.blockedDays[dayKey];
+                
+                if (currentlyBlocked) {
+                    delete globalData.blockedDays[dayKey];
+                } else {
+                    globalData.blockedDays[dayKey] = true;
+                }
+
+                database.ref('paradiso_cinema').set(globalData);
+                dateBlockClicks[dayIndex] = 0;
+            }
+        }
+
         function buildScreensNav() {
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
@@ -491,10 +534,12 @@
             const dates = globalData.settings?.dates || ["", "", "", "", "", "", ""];
             const times = globalData.settings?.times || ["", "", "", ""];
             const movies = globalData.settings?.movies || {};
+            const blockedDays = globalData.blockedDays || {};
 
             let count = 1;
             for (let d = 0; d < 7; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
+                let isBlocked = blockedDays[`day_${d}`];
                 
                 const dateGroup = document.createElement('div');
                 dateGroup.className = 'date-group';
@@ -503,8 +548,20 @@
                 dateHeader.className = 'date-header';
                 
                 let titleSpan = document.createElement('span');
-                titleSpan.innerText = `📅 ${dateStr}`;
+                titleSpan.innerText = `📅 ${dateStr}` + (isBlocked ? ' (ပြီးခဲ့တဲ့ရက် - ပိတ်ထားသည်)' : '');
                 dateHeader.appendChild(titleSpan);
+
+                let dateActions = document.createElement('div');
+                dateActions.className = 'date-actions';
+
+                let dateBlockBtn = document.createElement('button');
+                dateBlockBtn.className = `date-block-btn ${isBlocked ? 'blocked' : ''}`;
+                dateBlockBtn.innerText = isBlocked ? 'Unblock Day' : 'Block Day';
+                dateBlockBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    handleDateBlockClick(d, dateBlockBtn);
+                };
+                dateActions.appendChild(dateBlockBtn);
 
                 let dateResetBtn = document.createElement('button');
                 dateResetBtn.className = 'date-reset-btn';
@@ -513,8 +570,9 @@
                     e.stopPropagation();
                     handleDateResetClick(d, dateResetBtn, dateStr);
                 };
-                dateHeader.appendChild(dateResetBtn);
+                dateActions.appendChild(dateResetBtn);
 
+                dateHeader.appendChild(dateActions);
                 dateGroup.appendChild(dateHeader);
 
                 const timesGrid = document.createElement('div');
@@ -638,7 +696,6 @@
             row.seats.forEach(num => {
                 if (num === 0) {
                     const emptyDiv = document.createElement('div');
-                    // R နဲ့ S တန်းအတွက် နေရာလွတ် (gap) များကိုလည်း အရွယ်အစား ချိန်ညှိပေးရန်
                     emptyDiv.className = row.label === 'R' || row.label === 'S' ? 'empty space-20000' : 'empty';
                     rowDiv.appendChild(emptyDiv);
                 } else {
