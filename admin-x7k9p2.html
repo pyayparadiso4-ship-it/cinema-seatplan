@@ -47,7 +47,7 @@
         .settings-body.hidden { display: none; }
 
         .settings-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; font-size: 12px; }
-        .settings-group { display: flex; align-items: center; gap: 6px; }
+        .settings-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .settings-group input {
             background: #333; border: 1px solid #555; color: #fff; padding: 5px 8px;
             border-radius: 4px; font-size: 12px;
@@ -191,16 +191,20 @@
 
     <div class="settings-panel">
         <div class="settings-header" onclick="toggleSettingsPanel()">
-            <span>⚙️ ရက်စွဲ၊ ပွဲချိန် နှင့် ဇာတ်ကားနာမည်များ သတ်မှတ်ရန် (ဆက်တင်များ)</span>
+            <span>⚙️ ရက်စွဲ (၇ ရက်စာ)၊ ပွဲချိန် နှင့် ဇာတ်ကားနာမည်များ သတ်မှတ်ရန် (ဆက်တင်များ)</span>
             <span class="collapse-arrow" id="collapseArrow">▼</span>
         </div>
         <div class="settings-body" id="settingsBody">
             <div class="settings-row">
                 <div class="settings-group">
-                    <label><b>ရက်စွဲ (၃ ရက်စာ):</b></label>
+                    <label><b>ရက်စွဲ (၇ ရက်စာ):</b></label>
                     <input type="date" id="date1">
                     <input type="date" id="date2">
                     <input type="date" id="date3">
+                    <input type="date" id="date4">
+                    <input type="date" id="date5">
+                    <input type="date" id="date6">
+                    <input type="date" id="date7">
                 </div>
                 <div class="settings-group">
                     <label><b>ပွဲချိန် (၄ ချိန်):</b></label>
@@ -211,7 +215,7 @@
                 </div>
             </div>
             <div>
-                <label style="font-size: 12px; color: #ffeb3b; font-weight: bold; display: block; margin-bottom: 4px;">Screen ၁၂ ခုအတွက် ဇာတ်ကားနာမည်များ:</label>
+                <label style="font-size: 12px; color: #ffeb3b; font-weight: bold; display: block; margin-bottom: 4px;">Screen ၂၈ ခုအတွက် ဇာတ်ကားနာမည်များ:</label>
                 <div class="movie-inputs-grid" id="movieInputsContainer"></div>
             </div>
             <div class="settings-footer-row">
@@ -353,7 +357,7 @@
 
         let selectedAdminColor = null;
         let globalData = {
-            settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+            settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
             screens: {}
         };
         let currentScreenId = 'screen_1';
@@ -378,7 +382,7 @@
                     globalData = data;
                 } else {
                     globalData = {
-                        settings: { dates: ["", "", ""], times: ["", "", "", ""], movies: {} },
+                        settings: { dates: ["", "", "", "", "", "", ""], times: ["", "", "", ""], movies: {} },
                         screens: {}
                     };
                 }
@@ -392,9 +396,9 @@
             if (!globalData.settings) {
                 globalData.settings = { dates: [], times: [], movies: {} };
             }
-            document.getElementById('date1').value = globalData.settings.dates?.[0] || '';
-            document.getElementById('date2').value = globalData.settings.dates?.[1] || '';
-            document.getElementById('date3').value = globalData.settings.dates?.[2] || '';
+            for (let i = 1; i <= 7; i++) {
+                document.getElementById(`date${i}`).value = globalData.settings.dates?.[i-1] || '';
+            }
 
             document.getElementById('time1').value = globalData.settings.times?.[0] || '';
             document.getElementById('time2').value = globalData.settings.times?.[1] || '';
@@ -403,7 +407,7 @@
 
             const movieContainer = document.getElementById('movieInputsContainer');
             movieContainer.innerHTML = '';
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 28; i++) {
                 let sKey = `screen_${i}`;
                 let mName = (globalData.settings.movies && globalData.settings.movies[sKey]) ? globalData.settings.movies[sKey] : '';
                 
@@ -415,11 +419,11 @@
         }
 
         function saveSettings() {
-            globalData.settings.dates = [
-                document.getElementById('date1').value,
-                document.getElementById('date2').value,
-                document.getElementById('date3').value
-            ];
+            globalData.settings.dates = [];
+            for (let i = 1; i <= 7; i++) {
+                globalData.settings.dates.push(document.getElementById(`date${i}`).value);
+            }
+
             globalData.settings.times = [
                 document.getElementById('time1').value,
                 document.getElementById('time2').value,
@@ -428,7 +432,7 @@
             ];
 
             if (!globalData.settings.movies) globalData.settings.movies = {};
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 28; i++) {
                 let val = document.getElementById(`m_input_${i}`).value;
                 globalData.settings.movies[`screen_${i}`] = val;
             }
@@ -458,7 +462,6 @@
             } else {
                 clearTimeout(dateResetTimers[dayIndex]);
                 
-                // ထိုရက်စွဲအောက်ရှိ Screen ၄ ခုကို တွက်ချက်ပြီး ရှင်းလင်းမည် (ဥပမာ Day 1 ဆိုရင် screen_1 မှ screen_4 ထိ)
                 let startScreen = (dayIndex * 4) + 1;
                 let endScreen = startScreen + 3;
 
@@ -481,12 +484,12 @@
             const nav = document.getElementById('screensNav');
             nav.innerHTML = '';
             
-            const dates = globalData.settings?.dates || ["", "", ""];
+            const dates = globalData.settings?.dates || ["", "", "", "", "", "", ""];
             const times = globalData.settings?.times || ["", "", "", ""];
             const movies = globalData.settings?.movies || {};
 
             let count = 1;
-            for (let d = 0; d < 3; d++) {
+            for (let d = 0; d < 7; d++) {
                 let dateStr = dates[d] ? dates[d] : `Day ${d+1}`;
                 
                 const dateGroup = document.createElement('div');
