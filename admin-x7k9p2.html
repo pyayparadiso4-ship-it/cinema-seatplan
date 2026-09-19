@@ -14,8 +14,10 @@
         
         .admin-controls {
             background: #222; padding: 12px 15px; border-radius: 8px; margin-bottom: 12px;
-            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between;
         }
+        .admin-controls-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        
         .color-btn {
             width: 85px; height: 35px; border: 2px solid transparent; border-radius: 6px;
             color: #fff; font-weight: bold; cursor: pointer; text-shadow: 0 1px 2px #000; font-size: 12px;
@@ -24,7 +26,7 @@
 
         .reset-btn {
             background: #d32f2f; color: #fff; border: none; padding: 0 14px; height: 35px;
-            border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: auto; font-size: 12px;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;
         }
         .reset-btn:hover { background: #b71c1c; }
 
@@ -125,11 +127,17 @@
         .top-summary-item { text-align: center; display: flex; flex-direction: column; gap: 2px; }
 
         .movie-display-header {
-            text-align: center; background: #252525; border: 1px solid #444; padding: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            text-align: center; background: #252525; border: 1px solid #444; padding: 10px 15px;
             border-radius: 6px; margin-bottom: 12px;
         }
+        .movie-display-left { text-align: left; }
         .movie-title-text { font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 2px; }
         .movie-info-sub { font-size: 12px; color: #aaa; }
+
+        .movie-display-right-controls {
+            display: flex; gap: 8px; align-items: center;
+        }
 
         .screen { background: #e0e0e0; color: #000; text-align: center; padding: 6px; font-weight: bold; margin: 0 auto 20px auto; width: 100%; border-radius: 4px; box-shadow: 0 0 15px rgba(255,255,255,0.4); letter-spacing: 2px; font-size: 13px; }
         
@@ -192,11 +200,9 @@
 <body>
 
     <div class="admin-controls">
-        <span><b>အရောင်:</b></span>
-        <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ (ရောင်းပြီး)</button>
-        <button class="color-btn" style="background:#ffcc00; color:#000;" onclick="selectColor('yellow', this)">အဝါ</button>
-        <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
-        
+        <div class="admin-controls-left">
+            <span style="font-size: 12px; color: #aaa;">Admin Tools:</span>
+        </div>
         <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Current Screen (3 Clicks)</button>
     </div>
 
@@ -263,8 +269,15 @@
             </div>
 
             <div class="movie-display-header">
-                <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
-                <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+                <div class="movie-display-left">
+                    <div class="movie-title-text" id="displayMovieTitle">ဇာတ်ကားနာမည် မရှိသေးပါ</div>
+                    <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
+                </div>
+                <div class="movie-display-right-controls">
+                    <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
+                    <button class="color-btn" style="background:#ffcc00; color:#000;" onclick="selectColor('yellow', this)">အဝါ</button>
+                    <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
+                </div>
             </div>
 
             <div class="screen">SCREEN</div>
@@ -299,7 +312,7 @@
                     </div>
 
                     <div class="grand-total-box" style="margin-top: 5px;">
-                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ</div>
+                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ (အနီနှင့် ခရမ်း သီးသန့်)</div>
                         <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
                     </div>
                 </div>
@@ -649,8 +662,12 @@
                 
                 if (rowObj) {
                     let p = rowObj.price;
-                    tierCounts[p]++;
-                    tierPrices[p] += p;
+                    
+                    // အဝါရောင်ကို ဈေးနှုန်းဘက်တွင် ထည့်မတွက်စေရန် ဤနေရာတွင် စစ်ထုတ်ထားသည်
+                    if (color === 'red' || color === 'purple') {
+                        tierCounts[p]++;
+                        tierPrices[p] += p;
+                    }
 
                     if (colorCounts[color] !== undefined) {
                         colorCounts[color]++;
@@ -717,7 +734,7 @@
                     // တစ်ချက်နှိပ်လျှင် ရွေးထားသောအရောင် တင်ရန်
                     seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
-                            alert('ကျေးဇူးပြု၍ အပေါ်ဘက်မှ အနီ/အဝါ/ခရမ်း ရောင်တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
+                            alert('ကျေးဇူးပြု၍ ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/အဝါ/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
                             return;
                         }
                         let screenSeats = getActiveScreenSeats();
