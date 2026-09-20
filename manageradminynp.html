@@ -25,7 +25,6 @@
         }
         .color-btn.selected { border-color: #fff; outline: 3px solid #ffeb3b; }
         
-        /* အနီရောင်ခလုတ်ဖြစ်ပြီး အဝါရောင်အစက်/အမှတ်အသား ပါရှိသောပုံစံ (အလယ်ခလုတ်အတွက်) */
         .color-btn.dot-yellow-btn {
             background-color: #ff3333 !important;
             color: #fff !important;
@@ -208,7 +207,6 @@
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
         
-        /* ဇယားကွက်ပေါ်တွင် အနီရောင်ပေါ် အဝါစက်ပါရှိသော ခုံအခြေအနေ (အလယ်ခလုတ်ပုံစံအတိုင်း) */
         .admin-yellow { 
             background-color: #ff3333 !important; 
             color: white !important; 
@@ -310,7 +308,6 @@
                     <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
                 </div>
                 <div class="movie-display-right-controls">
-                    <!-- အရောင်ခလုတ် ၃ ခု (အလယ်ခလုတ်သည် အနီရောင်ပေါ် အဝါစက်ပါသော ဒီဇိုင်းဖြစ်သည်) -->
                     <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
                     <button class="color-btn dot-yellow-btn" onclick="selectColor('yellow', this)" title="အဝါ"></button>
                     <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
@@ -700,7 +697,8 @@
                 if (rowObj) {
                     let p = rowObj.price;
                     
-                    if (color === 'red' || color === 'yellow' || color === 'purple') {
+                    // အလယ်ခလုတ် (yellow) ကို တန်းအလိုက် ရေတွက်ခြင်းနှင့် ဝင်ငွေတွက်ခြင်းတို့မှ ဖယ်ရှားထားသည်
+                    if (color === 'red' || color === 'purple') {
                         tierCounts[p]++;
                         tierPrices[p] += p;
                     }
@@ -728,6 +726,7 @@
                 grandTotal += tierPrices[price];
             });
 
+            // စုစုပေါင်းဝင်ငွေ (အနီနှင့် ခရမ်း သီးသန့်) တွင် အဝါခုံများကို ထည့်မတွက်ပါ
             document.getElementById('grand-total-price').innerText = grandTotal.toLocaleString();
             document.getElementById('top-grand-total').innerText = grandTotal.toLocaleString();
         }
