@@ -25,7 +25,7 @@
         }
         .color-btn.selected { border-color: #fff; outline: 3px solid #ffeb3b; }
         
-        /* အနီရောင်ခလုတ်ဖြစ်ပြီး အဝါရောင်အစက်/အမှတ်အသား ပါရှိသောပုံစံ */
+        /* အနီရောင်ခလုတ်ဖြစ်ပြီး အဝါရောင်အစက်/အမှတ်အသား ပါရှိသောပုံစံ (အလယ်ခလုတ်အတွက်) */
         .color-btn.dot-yellow-btn {
             background-color: #ff3333 !important;
             color: #fff !important;
@@ -207,8 +207,13 @@
         .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
-        .admin-yellow { background-color: #ffcc00 !important; color: black !important; position: relative; }
-        /* အဝါရောင်ခလုတ်ပေါ်တွင် အနီရောင်အစက် သို့မဟုတ် အမှတ်အသားပါစေလိုပါက ဤနေရာတွင် ထပ်မံပြင်ဆင်နိုင်သည် */
+        
+        /* ဇယားကွက်ပေါ်တွင် အနီရောင်ပေါ် အဝါစက်ပါရှိသော ခုံအခြေအနေ (အလယ်ခလုတ်ပုံစံအတိုင်း) */
+        .admin-yellow { 
+            background-color: #ff3333 !important; 
+            color: white !important; 
+            position: relative; 
+        }
         .admin-yellow::after {
             content: '';
             position: absolute;
@@ -216,8 +221,9 @@
             right: 4px;
             width: 6px;
             height: 6px;
-            background-color: #ff3333;
+            background-color: #ffcc00;
             border-radius: 50%;
+            box-shadow: 0 0 3px #000;
         }
         
         .admin-purple { background-color: #9933ee !important; color: white !important; }
@@ -283,7 +289,7 @@
                     <span style="font-size: 11px; color: #ff9999;">(<span id="top-red-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #ffcc00;">
-                    <span>အဝါ</span>
+                    <span>အဝါ (အမှတ်အသား)</span>
                     <span><span id="top-yellow-count">0</span> ခုံ</span>
                     <span style="font-size: 11px; color: #ffee55;">(<span id="top-yellow-amount">0</span> Ks)</span>
                 </div>
@@ -304,7 +310,7 @@
                     <div class="movie-info-sub" id="displayMovieInfo">ရက်စွဲနှင့် ပွဲချိန် ရွေးချယ်ပါ</div>
                 </div>
                 <div class="movie-display-right-controls">
-                    <!-- အရောင်ခလုတ် ၃ ခု (အလယ်ခလုတ်ကို အနီရောင်ပေါ် အဝါစက်ပါသော ပုံစံဖြင့် ပြောင်းလဲထားပါသည်) -->
+                    <!-- အရောင်ခလုတ် ၃ ခု (အလယ်ခလုတ်သည် အနီရောင်ပေါ် အဝါစက်ပါသော ဒီဇိုင်းဖြစ်သည်) -->
                     <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
                     <button class="color-btn dot-yellow-btn" onclick="selectColor('yellow', this)" title="အဝါ"></button>
                     <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
@@ -694,7 +700,7 @@
                 if (rowObj) {
                     let p = rowObj.price;
                     
-                    if (color === 'red' || color === 'purple') {
+                    if (color === 'red' || color === 'yellow' || color === 'purple') {
                         tierCounts[p]++;
                         tierPrices[p] += p;
                     }
