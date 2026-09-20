@@ -21,8 +21,25 @@
         .color-btn {
             width: 85px; height: 35px; border: 2px solid transparent; border-radius: 6px;
             color: #fff; font-weight: bold; cursor: pointer; text-shadow: 0 1px 2px #000; font-size: 12px;
+            position: relative;
         }
         .color-btn.selected { border-color: #fff; outline: 3px solid #ffeb3b; }
+        
+        .color-btn.dot-yellow-btn {
+            background-color: #ff3333 !important;
+            color: #fff !important;
+        }
+        .color-btn.dot-yellow-btn::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #000;
+        }
 
         .reset-btn {
             background: #d32f2f; color: #fff; border: none; padding: 0 14px; height: 35px;
@@ -189,7 +206,24 @@
         .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
-        .admin-yellow { background-color: #e62e2e !important; color: white !important; } /* ပုံထဲကအရောင်အသစ် (အနီရင့်ရောင်/ပုံစံတူ) သို့ ပြောင်းထားသည် */
+        
+        .admin-yellow { 
+            background-color: #ff3333 !important; 
+            color: white !important; 
+            position: relative; 
+        }
+        .admin-yellow::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 3px #000;
+        }
+        
         .admin-purple { background-color: #9933ee !important; color: white !important; }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
@@ -252,10 +286,10 @@
                     <span><span id="top-red-count">0</span> ခုံ</span>
                     <span style="font-size: 11px; color: #ff9999;">(<span id="top-red-amount">0</span> Ks)</span>
                 </div>
-                <div class="top-summary-item" style="color: #e62e2e;">
-                    <span>အရောင်အသစ်</span>
+                <div class="top-summary-item" style="color: #ffcc00;">
+                    <span>အဝါ (အမှတ်အသား)</span>
                     <span><span id="top-yellow-count">0</span> ခုံ</span>
-                    <span style="font-size: 11px; color: #ff9999;">(<span id="top-yellow-amount">0</span> Ks)</span>
+                    <span style="font-size: 11px; color: #ffee55;">(<span id="top-yellow-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #9933ee;">
                     <span>ခရမ်း</span>
@@ -275,8 +309,7 @@
                 </div>
                 <div class="movie-display-right-controls">
                     <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
-                    <!-- ပုံထဲကအတိုင်း အဝါခလုတ်နေရာတွင် အရောင်အသစ် (#e62e2e) ကို ထည့်သွင်းထားသည် -->
-                    <button class="color-btn" style="background:#e62e2e;" onclick="selectColor('yellow', this)">အသစ်</button>
+                    <button class="color-btn dot-yellow-btn" onclick="selectColor('yellow', this)" title="အဝါ"></button>
                     <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
                 </div>
             </div>
@@ -313,7 +346,7 @@
                     </div>
 
                     <div class="grand-total-box" style="margin-top: 5px;">
-                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ</div>
+                        <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">စုစုပေါင်းဝင်ငွေ (အနီနှင့် ခရမ်း သီးသန့်)</div>
                         <div style="font-size: 15px; font-weight: bold; color: #ffeb3b;"><span id="grand-total-price">0</span> Ks</div>
                     </div>
                 </div>
@@ -322,8 +355,7 @@
     </div>
 
     <div class="legend">
-        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> အနီ</div>
-        <div class="legend-item"><div class="legend-box" style="background:#e62e2e;"></div> အရောင်အသစ်</div>
+        <div class="legend-item"><div class="legend-box" style="background:#ff3333;"></div> အနီ - ရောင်းပြီး</div>
         <div class="legend-item"><div class="legend-box price-4000"></div> 4,000 (A)</div>
         <div class="legend-item"><div class="legend-box price-5000"></div> 5,000 (B-D)</div>
         <div class="legend-item"><div class="legend-box price-6000"></div> 6,000 (E-F)</div>
@@ -665,8 +697,8 @@
                 if (rowObj) {
                     let p = rowObj.price;
                     
-                    // အရောင်အသစ် (yellow အနေနဲ့သိမ်းထားတဲ့ အရောင်) ဖြင့် နှိပ်ထားသော ခုံများကိုပါ ဝင်ငွေတွင် ထည့်သွင်းတွက်ချက်ရန်
-                    if (color === 'red' || color === 'yellow' || color === 'purple') {
+                    // အလယ်ခလုတ် (yellow) ကို တန်းအလိုက် ရေတွက်ခြင်းနှင့် ဝင်ငွေတွက်ခြင်းတို့မှ ဖယ်ရှားထားသည်
+                    if (color === 'red' || color === 'purple') {
                         tierCounts[p]++;
                         tierPrices[p] += p;
                     }
@@ -694,6 +726,7 @@
                 grandTotal += tierPrices[price];
             });
 
+            // စုစုပေါင်းဝင်ငွေ (အနီနှင့် ခရမ်း သီးသန့်) တွင် အဝါခုံများကို ထည့်မတွက်ပါ
             document.getElementById('grand-total-price').innerText = grandTotal.toLocaleString();
             document.getElementById('top-grand-total').innerText = grandTotal.toLocaleString();
         }
@@ -724,20 +757,17 @@
                     seatBtn.className = `seat ${row.class}`;
                     seatBtn.innerText = num;
                     
-                    // ခုံကို နှစ်ချက်ဆက်တိုက်နှိပ်လျှင် (Double Click) အရောင်ပြန်ဖျက်ရန်
                     seatBtn.ondblclick = () => {
                         let screenSeats = getActiveScreenSeats();
                         if (screenSeats[seatId]) {
-                            delete screenSeats[screenSeats[seatId] ? seatId : '']; // Safe delete
                             delete screenSeats[seatId];
                             database.ref('paradiso_cinema').set(globalData);
                         }
                     };
 
-                    // တစ်ချက်နှိပ်လျှင် ရွေးထားသောအရောင် တင်ရန်
                     seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
-                            alert('ကျေးဇူးပြု၍ ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/အရောင်အသစ်/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
+                            alert('ကျေးဇူးပြု၍ ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/အဝါ/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
                             return;
                         }
                         let screenSeats = getActiveScreenSeats();
