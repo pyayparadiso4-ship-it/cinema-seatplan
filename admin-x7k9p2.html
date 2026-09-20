@@ -32,13 +32,13 @@
         .color-btn.dot-yellow-btn::after {
             content: '';
             position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 8px;
-            height: 8px;
+            top: 5px;
+            right: 5px;
+            width: 5px;
+            height: 5px;
             background-color: #ffcc00;
             border-radius: 50%;
-            box-shadow: 0 0 4px #000;
+            box-shadow: 0 0 3px #000;
         }
 
         .reset-btn {
@@ -46,52 +46,6 @@
             border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;
         }
         .reset-btn:hover { background: #b71c1c; }
-
-        .settings-panel {
-            background: #1a1a1a; border: 1px solid #444; border-radius: 8px;
-            margin-bottom: 15px; overflow: hidden;
-        }
-        .settings-header {
-            background: #252525; padding: 10px 15px; display: flex; justify-content: space-between;
-            align-items: center; cursor: pointer; font-weight: bold; font-size: 13px; color: #ffeb3b;
-            user-select: none;
-        }
-        .settings-header:hover { background: #2a2a2a; }
-        .collapse-arrow { font-size: 16px; transition: transform 0.3s; }
-        .collapse-arrow.collapsed { transform: rotate(-90deg); }
-
-        .settings-body {
-            padding: 12px 15px; display: flex; flex-direction: column; gap: 10px;
-        }
-        .settings-body.hidden { display: none; }
-
-        .settings-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; font-size: 12px; }
-        .settings-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .settings-group input {
-            background: #333; border: 1px solid #555; color: #fff; padding: 5px 8px;
-            border-radius: 4px; font-size: 12px;
-        }
-        
-        .movie-inputs-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%;
-            background: #222; padding: 8px; border-radius: 6px; border: 1px dashed #444;
-        }
-        @media (max-width: 768px) {
-            .movie-inputs-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        .movie-input-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
-        .movie-input-item span { min-width: 24px; font-weight: bold; color: #aaa; }
-        .movie-input-item input {
-            background: #333; border: 1px solid #555; color: #fff; padding: 4px 6px;
-            border-radius: 4px; width: 100%; font-size: 11px;
-        }
-
-        .settings-footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-        .save-settings-btn {
-            background: #2e7d32; color: #fff; border: none; padding: 6px 16px;
-            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;
-        }
-        .save-settings-btn:hover { background: #1b5e20; }
 
         .screens-nav {
             background: #181818; padding: 10px; border-radius: 8px; margin-bottom: 12px;
@@ -215,13 +169,13 @@
         .admin-yellow::after {
             content: '';
             position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 6px;
-            height: 6px;
+            top: 3px;
+            right: 3px;
+            width: 4px;
+            height: 4px;
             background-color: #ffcc00;
             border-radius: 50%;
-            box-shadow: 0 0 3px #000;
+            box-shadow: 0 0 2px #000;
         }
         
         .admin-purple { background-color: #9933ee !important; color: white !important; }
@@ -238,42 +192,6 @@
             <span style="font-size: 12px; color: #aaa;">Admin Tools:</span>
         </div>
         <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Current Screen (3 Clicks)</button>
-    </div>
-
-    <div class="settings-panel">
-        <div class="settings-header" onclick="toggleSettingsPanel()">
-            <span>⚙️ ရက်စွဲ (၇ ရက်စာ)၊ ပွဲချိန် နှင့် ဇာတ်ကားနာမည်များ သတ်မှတ်ရန် (ဆက်တင်များ)</span>
-            <span class="collapse-arrow" id="collapseArrow">▼</span>
-        </div>
-        <div class="settings-body" id="settingsBody">
-            <div class="settings-row">
-                <div class="settings-group">
-                    <label><b>ရက်စွဲ (၇ ရက်စာ):</b></label>
-                    <input type="date" id="date1">
-                    <input type="date" id="date2">
-                    <input type="date" id="date3">
-                    <input type="date" id="date4">
-                    <input type="date" id="date5">
-                    <input type="date" id="date6">
-                    <input type="date" id="date7">
-                </div>
-                <div class="settings-group">
-                    <label><b>ပွဲချိန် (၄ ချိန်):</b></label>
-                    <input type="text" id="time1" placeholder="ပွဲ ၁" style="width:85px;">
-                    <input type="text" id="time2" placeholder="ပွဲ ၂" style="width:85px;">
-                    <input type="text" id="time3" placeholder="ပွဲ ၃" style="width:85px;">
-                    <input type="text" id="time4" placeholder="ပွဲ ၄" style="width:85px;">
-                </div>
-            </div>
-            <div>
-                <label style="font-size: 12px; color: #ffeb3b; font-weight: bold; display: block; margin-bottom: 4px;">Screen ၂၈ ခုအတွက် ဇာတ်ကားနာမည်များ:</label>
-                <div class="movie-inputs-grid" id="movieInputsContainer"></div>
-            </div>
-            <div class="settings-footer-row">
-                <span style="font-size: 11px; color: #888;">ပြင်ဆင်ပြီးပါက Cloud သို့ တိုက်ရိုက်သိမ်းမည်</span>
-                <button class="save-settings-btn" onclick="saveSettings()">💾 ဆက်တင်များကို Cloud သို့ သိမ်းမည်</button>
-            </div>
-        </div>
     </div>
 
     <div class="screens-nav" id="screensNav"></div>
@@ -427,13 +345,6 @@
             el.classList.add('selected');
         }
 
-        function toggleSettingsPanel() {
-            const body = document.getElementById('settingsBody');
-            const arrow = document.getElementById('collapseArrow');
-            body.classList.toggle('hidden');
-            arrow.classList.toggle('collapsed');
-        }
-
         function initFirebaseSync() {
             database.ref('paradiso_cinema').on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -446,61 +357,8 @@
                         blockedDays: {}
                     };
                 }
-                initSettingsUI();
                 buildScreensNav();
                 updateUI();
-            });
-        }
-
-        function initSettingsUI() {
-            if (!globalData.settings) {
-                globalData.settings = { dates: [], times: [], movies: {} };
-            }
-            for (let i = 1; i <= 7; i++) {
-                document.getElementById(`date${i}`).value = globalData.settings.dates?.[i-1] || '';
-            }
-
-            document.getElementById('time1').value = globalData.settings.times?.[0] || '';
-            document.getElementById('time2').value = globalData.settings.times?.[1] || '';
-            document.getElementById('time3').value = globalData.settings.times?.[2] || '';
-            document.getElementById('time4').value = globalData.settings.times?.[3] || '';
-
-            const movieContainer = document.getElementById('movieInputsContainer');
-            movieContainer.innerHTML = '';
-            for (let i = 1; i <= 28; i++) {
-                let sKey = `screen_${i}`;
-                let mName = (globalData.settings.movies && globalData.settings.movies[sKey]) ? globalData.settings.movies[sKey] : '';
-                
-                let div = document.createElement('div');
-                div.className = 'movie-input-item';
-                div.innerHTML = `<span>S${i}</span><input type="text" id="m_input_${i}" value="${mName}" placeholder="ဇာတ်ကားနာမည်">`;
-                movieContainer.appendChild(div);
-            }
-        }
-
-        function saveSettings() {
-            globalData.settings.dates = [];
-            for (let i = 1; i <= 7; i++) {
-                globalData.settings.dates.push(document.getElementById(`date${i}`).value);
-            }
-
-            globalData.settings.times = [
-                document.getElementById('time1').value,
-                document.getElementById('time2').value,
-                document.getElementById('time3').value,
-                document.getElementById('time4').value
-            ];
-
-            if (!globalData.settings.movies) globalData.settings.movies = {};
-            for (let i = 1; i <= 28; i++) {
-                let val = document.getElementById(`m_input_${i}`).value;
-                globalData.settings.movies[`screen_${i}`] = val;
-            }
-
-            database.ref('paradiso_cinema').set(globalData).then(() => {
-                alert('ဆက်တင်များကို Cloud သို့ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
-            }).catch((error) => {
-                alert('သိမ်းဆည်းရာတွင် အမှားရှိသည်: ' + error.message);
             });
         }
 
@@ -661,7 +519,7 @@
             
             let dateText = (globalData.settings?.dates && globalData.settings.dates[dIndex]) ? globalData.settings.dates[dIndex] : `Day ${dIndex+1}`;
             let timeText = (globalData.settings?.times && globalData.settings.times[tIndex]) ? globalData.settings.times[tIndex] : `Show ${tIndex+1}`;
-            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် ထည့်ရန်ကျန်ပါသေးသည်';
+            let movieName = (globalData.settings?.movies && globalData.settings.movies[currentScreenId]) ? globalData.settings.movies[currentScreenId] : 'ဇာတ်ကားနာမည် မရှိသေးပါ';
 
             document.getElementById('displayMovieTitle').innerText = movieName;
             document.getElementById('displayMovieInfo').innerText = `Screen ${screenIndex + 1} | ရက်စွဲ: ${dateText} | ပွဲချိန်: ${timeText}`;
@@ -697,7 +555,6 @@
                 if (rowObj) {
                     let p = rowObj.price;
                     
-                    // အလယ်ခလုတ် (yellow) ကို တန်းအလိုက် ရေတွက်ခြင်းနှင့် ဝင်ငွေတွက်ခြင်းတို့မှ ဖယ်ရှားထားသည်
                     if (color === 'red' || color === 'purple') {
                         tierCounts[p]++;
                         tierPrices[p] += p;
@@ -726,7 +583,6 @@
                 grandTotal += tierPrices[price];
             });
 
-            // စုစုပေါင်းဝင်ငွေ (အနီနှင့် ခရမ်း သီးသန့်) တွင် အဝါခုံများကို ထည့်မတွက်ပါ
             document.getElementById('grand-total-price').innerText = grandTotal.toLocaleString();
             document.getElementById('top-grand-total').innerText = grandTotal.toLocaleString();
         }
