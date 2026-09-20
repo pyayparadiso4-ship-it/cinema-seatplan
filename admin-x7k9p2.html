@@ -663,6 +663,7 @@
                 if (rowObj) {
                     let p = rowObj.price;
                     
+                    // အဝါရောင်ကို ဈေးနှုန်းဘက်တွင် ထည့်မတွက်စေရန် ဤနေရာတွင် စစ်ထုတ်ထားသည်
                     if (color === 'red' || color === 'purple') {
                         tierCounts[p]++;
                         tierPrices[p] += p;
@@ -730,10 +731,14 @@
                         }
                     };
 
-                    // တစ်ချက်နှိပ်လျှင် အရောင်ကို အနီရောင် (red) သီးသန့် အမြဲဖြစ်စေရန် ပြုပြင်ထားသည်
+                    // တစ်ချက်နှိပ်လျှင် ရွေးထားသောအရောင် တင်ရန်
                     seatBtn.onclick = () => {
+                        if (!selectedAdminColor) {
+                            alert('ကျေးဇူးပြု၍ ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/အဝါ/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
+                            return;
+                        }
                         let screenSeats = getActiveScreenSeats();
-                        screenSeats[seatId] = 'red'; // manageradminynp ဘက်က နှိပ်လျှင် အနီရောင် သီးသန့်ဝင်စေရန်
+                        screenSeats[seatId] = selectedAdminColor;
                         database.ref('paradiso_cinema').set(globalData);
                     };
 
