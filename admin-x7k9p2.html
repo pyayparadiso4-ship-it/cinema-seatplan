@@ -24,6 +24,22 @@
             position: relative;
         }
         .color-btn.selected { border-color: #fff; outline: 3px solid #ffeb3b; }
+        
+        .color-btn.dot-yellow-btn {
+            background-color: #ff3333 !important;
+            color: #fff !important;
+        }
+        .color-btn.dot-yellow-btn::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 5px;
+            height: 5px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 3px #000;
+        }
 
         .reset-btn {
             background: #d32f2f; color: #fff; border: none; padding: 0 14px; height: 35px;
@@ -75,7 +91,7 @@
         .seat-map-inner { display: inline-block; white-space: nowrap; min-width: 1050px; width: 100%; }
         
         .top-summary-bar {
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             background: #252525; border: 1px solid #444; padding: 10px 15px;
             border-radius: 6px; margin-bottom: 12px; font-size: 12px;
         }
@@ -144,6 +160,24 @@
         .price-20000 { background-color: #B97034; color: #fff; }
 
         .admin-red { background-color: #ff3333 !important; color: white !important; }
+        
+        .admin-yellow { 
+            background-color: #ff3333 !important; 
+            color: white !important; 
+            position: relative; 
+        }
+        .admin-yellow::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 4px;
+            height: 4px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            box-shadow: 0 0 2px #000;
+        }
+        
         .admin-purple { background-color: #9933ee !important; color: white !important; }
 
         .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; font-size: 11px; }
@@ -156,7 +190,6 @@
     <div class="admin-controls">
         <div class="admin-controls-left">
             <span style="font-size: 12px; color: #aaa;">Admin Tools:</span>
-            <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
         </div>
         <button class="reset-btn" id="resetBtn" onclick="handleResetClick()">Reset Current Screen (3 Clicks)</button>
     </div>
@@ -170,6 +203,11 @@
                     <span>အနီ (ရောင်းပြီး)</span>
                     <span><span id="top-red-count">0</span> ခုံ</span>
                     <span style="font-size: 11px; color: #ff9999;">(<span id="top-red-amount">0</span> Ks)</span>
+                </div>
+                <div class="top-summary-item" style="color: #ffcc00;">
+                    <span>အဝါ (အမှတ်အသား)</span>
+                    <span><span id="top-yellow-count">0</span> ခုံ</span>
+                    <span style="font-size: 11px; color: #ffee55;">(<span id="top-yellow-amount">0</span> Ks)</span>
                 </div>
                 <div class="top-summary-item" style="color: #9933ee;">
                     <span>ခရမ်း</span>
@@ -189,6 +227,7 @@
                 </div>
                 <div class="movie-display-right-controls">
                     <button class="color-btn" style="background:#ff3333;" onclick="selectColor('red', this)">အနီ</button>
+                    <button class="color-btn dot-yellow-btn" onclick="selectColor('yellow', this)" title="အဝါ"></button>
                     <button class="color-btn" style="background:#9933ee;" onclick="selectColor('purple', this)">ခရမ်း</button>
                 </div>
             </div>
@@ -303,12 +342,7 @@
         function selectColor(color, el) {
             selectedAdminColor = color;
             document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
-            // Select all buttons matching this color to keep UI in sync
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                if(btn.onclick && btn.onclick.toString().includes(`'${color}'`)) {
-                    btn.classList.add('selected');
-                }
-            });
+            el.classList.add('selected');
         }
 
         function initFirebaseSync() {
@@ -493,7 +527,7 @@
             let screenSeats = getActiveScreenSeats();
 
             document.querySelectorAll('.seat').forEach(seat => {
-                seat.classList.remove('admin-red', 'admin-purple');
+                seat.classList.remove('admin-red', 'admin-yellow', 'admin-purple');
                 const seatId = seat.id;
                 if (screenSeats[seatId]) {
                     seat.classList.add('admin-' + screenSeats[seatId]);
@@ -508,8 +542,8 @@
             let tierCounts = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
             let tierPrices = { 4000: 0, 5000: 0, 6000: 0, 7000: 0, 8000: 0, 20000: 0 };
             
-            let colorCounts = { red: 0, purple: 0 };
-            let colorAmounts = { red: 0, purple: 0 };
+            let colorCounts = { red: 0, yellow: 0, purple: 0 };
+            let colorAmounts = { red: 0, yellow: 0, purple: 0 };
 
             for (let seatId in screenSeats) {
                 let color = screenSeats[seatId];
@@ -535,6 +569,9 @@
 
             document.getElementById('top-red-count').innerText = colorCounts.red;
             document.getElementById('top-red-amount').innerText = colorAmounts.red.toLocaleString();
+
+            document.getElementById('top-yellow-count').innerText = colorCounts.yellow;
+            document.getElementById('top-yellow-amount').innerText = colorAmounts.yellow.toLocaleString();
 
             document.getElementById('top-purple-count').innerText = colorCounts.purple;
             document.getElementById('top-purple-amount').innerText = colorAmounts.purple.toLocaleString();
@@ -586,7 +623,7 @@
 
                     seatBtn.onclick = () => {
                         if (!selectedAdminColor) {
-                            alert('ကျေးဇူးပြု၍ အပေါ်ဘက် (သို့မဟုတ်) ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
+                            alert('ကျေးဇူးပြု၍ ဇာတ်ကားနာမည်ဘေးရှိ အရောင်ခလုတ်များ (အနီ/အဝါ/ခရမ်း) တစ်မျိုးမျိုးကို အရင်နှိပ်ပါ။');
                             return;
                         }
                         let screenSeats = getActiveScreenSeats();
